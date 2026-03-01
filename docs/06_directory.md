@@ -92,7 +92,7 @@ apps/api/
 infra/dify/
 ├── docker-compose.yml        # Dify公式composeをベースにカスタマイズ
 └── .env.dify.example         # Dify環境変数テンプレート
-                              # （TiDB / Supabase / OpenAI / Gemini キー等）
+                              # （TiDB / Supabase / Gemini キー等）
 ```
 
 > Dify自体のコードは管理しない。公式Dockerイメージをそのまま使用。
@@ -144,7 +144,7 @@ apps/admin/
 infra/
 ├── dify/
 │   ├── docker-compose.yml        # Dify公式compose（自宅PC上で実行）
-│   └── .env.dify.example         # Supabase / TiDB / OpenAI キー等
+│   └── .env.dify.example         # Supabase / TiDB / Gemini キー等
 ├── docker/
 │   └── api.Dockerfile            # FastAPI用（Cloud Run へデプロイ）
 ├── env/

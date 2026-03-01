@@ -66,7 +66,7 @@
 | 内部DB | Supabase (Posgres) | Difyのメタデータ管理 無料のSupabase | コスト / 運用 | MySQLだと度々エラーが出る事例あり |
 | ベクトル検索 (Vector) | TiDB Serverless | Difyが標準対応。無料枠が非常に大きく、全文検索とのハイブリッドも得意。 | 検索精度 / スケール性 |  |
 | API方式 | Dify Chat API | Streaming（逐次回答）対応。フロントエンド（Next.js）から直接・間接に呼べる。 | 型安全 / 柔軟性 / 過不足 |  |
-| Embedding モデル | OpenAI / Gemini | 日本語のセマンティック検索において高精度。 | 検索精度 | 無料枠や少額課金で対応 |
+| Embedding モデル | Gemini | 日本語のセマンティック検索において高精度。 | 検索精度 | 無料枠や少額課金で対応 |
 | 認証 |  |  | セキュリティ / OAuth対応 |  |
 | 非同期処理 |  |  | 再試行 / 耐障害性 |  |
 

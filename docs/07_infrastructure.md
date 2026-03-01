@@ -83,7 +83,7 @@ flowchart LR
     %% =======================
     subgraph EXT["External Services"]
         DISCORD["Discord OAuth<br/>(管理画面認証 P1)"]:::svc
-        LLM["LLM API<br/>OpenAI / Gemini"]:::svc
+        LLM["LLM API<br/>Gemini"]:::svc
         NOTION["Notion"]:::svc
         DISCORD_LOG["Discord<br/>ログ"]:::svc
     end
@@ -168,7 +168,7 @@ flowchart LR
 
 責務：
 - RAGパイプライン管理（分割・Embedding・検索）
-- LLM呼び出し（OpenAI / Gemini）
+- LLM呼び出し（Gemini）
 - Chat APIとして公開（Cloudflare Tunnel経由）
 - データ取り込みジョブ管理（GUIから操作）
 
@@ -207,7 +207,7 @@ flowchart LR
 | サービス | 用途 | Phase |
 | --- | --- | --- |
 | Discord OAuth | 管理画面認証 | P1 |
-| OpenAI / Gemini | Embedding・LLM回答生成 | P0 |
+| Gemini | Embedding・LLM回答生成 | P0 |
 | Notion | FAQデータソース取り込み | P0 |
 | Discord | チャットログデータソース | P0 |
 
@@ -242,7 +242,7 @@ flowchart LR
 - RAGパイプライン（分割・Embedding・検索）をGUIで管理できる
 - Chat APIとしてそのまま公開可能
 - セルフホスト版をCloud Runで動かすことで無料枠内に収まる
-- LLM切り替え（OpenAI↔Gemini）がGUIから可能
+- LLM切り替え（Gemini）がGUIから可能
 
 ---
 
