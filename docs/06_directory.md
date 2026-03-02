@@ -24,6 +24,8 @@
 
 ```
 root/
+├── .github/
+│   └── workflows/           # GitHub Actions
 ├── apps/
 │   ├── web/                 # 新入生向けチャットUI（P0）
 │   ├── api/                 # 軽量API（ログ保存/PII/評価）（P0）
@@ -34,8 +36,7 @@ root/
 ├── infra/
 │   ├── dify/                # Dify起動設定（docker-compose）
 │   ├── docker/              # API用Dockerfile
-│   ├── env/                 # 環境変数テンプレート
-│   └── ci/                  # GitHub Actions
+│   └── env/                 # 環境変数テンプレート
 ├── docs/
 └── README.md
 ```
@@ -141,20 +142,22 @@ apps/admin/
 # 7️⃣ infra構成
 
 ```
+.github/
+└── workflows/
+    ├── deploy-fe.yml             # Cloudflare Pages へ FEデプロイ
+    ├── deploy-api.yml            # Cloud Run へ FastAPIデプロイ
+    └── deploy-dify.yml           # self-hosted runner で Dify再起動
+
 infra/
 ├── dify/
 │   ├── docker-compose.yml        # Dify公式compose（自宅PC上で実行）
 │   └── .env.dify.example         # Supabase / TiDB / Gemini キー等
 ├── docker/
 │   └── api.Dockerfile            # FastAPI用（Cloud Run へデプロイ）
-├── env/
-│   ├── .env.example
-│   ├── .env.dev
-│   └── .env.prod
-└── ci/
-    ├── deploy-fe.yml             # Cloudflare Pages へ FEデプロイ
-    ├── deploy-api.yml            # Cloud Run へ FastAPIデプロイ
-    └── deploy-dify.yml           # self-hosted runner で Dify再起動
+└── env/
+    ├── .env.example
+    ├── .env.dev
+    └── .env.prod
 ```
 
 ### CDフロー

@@ -1,7 +1,7 @@
 # 09_schedule_and_issues
 
 作成日時: 2026年3月1日 17:28
-最終更新日時: 2026年3月1日 17:56
+最終更新日時: 2026年3月2日 13:58
 最終更新者: iseebi
 
 # 🚀 プロジェクトIssue管理テンプレート（工数見積もり付き）
@@ -164,7 +164,7 @@ D:〇 | **28**
 
 ## 🏗️ Sprint 0：基盤構築（MVPの土台）
 
-### 🔢 推定合計：56h
+### 🔢 推定合計：74h
 
 | # | タイトル | 工数 | 時間 | 優先度 | 担当 | 備考 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -173,6 +173,16 @@ D:〇 | **28**
 | #003 | Discordログ取得スクリプト | L | 16h | 🔴 P0 | Data | CSVでもOK |
 | #004 | データクリーニング処理 | M | 8h | 🔴 P0 | Data | 正規表現 |
 | #005 | BEプロジェクト初期構築 | M | 8h | 🔴 P0 | BE | FastAPI想定 |
+| #046 | README 初期作成 | XS | 2h | 🔴 P0 | 全員 | プロジェクト概要・セットアップ手順・アーキテクチャ概要 |
+| #047 | .gitignore / .env.example 整備 | XS | 1h | 🔴 P0 | Infra | 各サービス（Next.js / FastAPI / Dify）分を網羅 |
+| #048 | PRテンプレート作成 | XS | 1h | 🔴 P0 | 全員 | `.github/pull_request_template.md` / 変更概要・テスト確認・スクリーンショット欄 |
+| #049 | Issueテンプレート作成 | XS | 1h | 🔴 P0 | 全員 | Bug report / Feature request / Task の3種 |
+| #050 | ブランチ保護ルール設定 | XS | 1h | 🔴 P0 | Infra | main への直push禁止・PR必須・CI通過必須 |
+| #051 | CODEOWNERS 設定 | XS | 1h | 🔴 P0 | 全員 | フロント / バックエンド / インフラ 領域ごとにレビュー担当を明示 |
+| #052 | Lint / Format 設定 | S | 3h | 🔴 P0 | FE/BE | FE: oxlint + oxfmt / BE: Ruff + Black |
+| #053 | pre-commit hooks 設定 | XS | 2h | 🔴 P0 | 全員 | Lint・型チェック・秘匿情報（detect-secrets）の自動検査 |
+| #054 | GitHub Actions 基本 CI | S | 4h | 🔴 P0 | Infra | lint / test / build を PR時に自動実行（FE・BE 各ワークフロー） |
+| #055 | AI 設定ファイル整備 | XS | 2h | 🔴 P0 | 全員 | 下記「AI整備詳細」参照 |
 
 ## 🏗️ Sprint 1：チャット基盤（MVP中核）
 
