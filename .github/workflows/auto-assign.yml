@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
+      issues: write
     steps:
       - name: Assign PR creator
         run: gh pr edit "${{ github.event.pull_request.html_url }}" --add-assignee "${{ github.event.pull_request.user.login }}"
