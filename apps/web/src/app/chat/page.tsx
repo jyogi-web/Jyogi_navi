@@ -2,17 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ConsentScreen } from '@/features/consent';
 import { hasConsented } from '@/lib/session';
+import { ChatContainer } from '@/features/chat';
 
-export default function Home() {
+export default function ChatPage() {
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    // 同意済みかチェックし、済んでいればチャット画面へリダイレクト
-    if (hasConsented()) {
-      router.push('/chat');
+    // 未同意の場合はホームページへリダイレクト
+    if (!hasConsented()) {
+      router.push('/');
     } else {
       setIsChecking(false);
     }
@@ -29,5 +29,5 @@ export default function Home() {
     );
   }
 
-  return <ConsentScreen />;
+  return <ChatContainer />;
 }
