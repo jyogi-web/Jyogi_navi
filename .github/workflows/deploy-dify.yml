@@ -49,8 +49,44 @@ jobs:
       - name: Verify services are running
         run: |
           cd infra/dify
+          services=$(docker-compose ps --services)
+          timeout_seconds=180
+          interval_seconds=10
+          elapsed=0
+
+          while [ "$elapsed" -lt "$timeout_seconds" ]; do
+            all_ok=true
+
+            for service in $services; do
+              container_id=$(docker-compose ps -q "$service")
+
+              if [ -z "$container_id" ]; then
+                echo "Service '$service' has no container yet"
+                all_ok=false
+                continue
+              fi
+
+              status=$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$container_id")
+              echo "Service '$service' status: $status"
+
+              if [ "$status" != "healthy" ] && [ "$status" != "running" ]; then
+                all_ok=false
+              fi
+            done
+
+            if [ "$all_ok" = true ]; then
+              echo "✅ All services are running"
+              exit 0
+            fi
+
+            echo "Waiting for all services to become healthy/running... ($elapsed/$timeout_seconds)"
+            sleep "$interval_seconds"
+            elapsed=$((elapsed + interval_seconds))
+          done
+
+          echo "❌ Some services are not healthy/running after timeout"
           docker-compose ps
-          echo "✅ All services are running"
+          exit 1
 
       - name: Cleanup old docker assets
         run: |
