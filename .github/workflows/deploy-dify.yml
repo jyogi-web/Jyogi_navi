@@ -15,11 +15,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          clean: false
 
       - name: Check docker-compose.yml syntax
         run: |
           cd infra/dify
-          docker-compose config > /dev/null
+          docker-compose --env-file .env.dify config > /dev/null
           echo "✅ docker-compose.yml syntax OK"
 
       - name: Validate CORS settings
@@ -44,12 +46,12 @@ jobs:
       - name: Pull pinned images
         run: |
           cd infra/dify
-          docker-compose pull
+          docker-compose --env-file .env.dify pull
 
       - name: Start Dify services
         run: |
           cd infra/dify
-          docker-compose up -d
+          docker-compose --env-file .env.dify up -d
 
       - name: Wait for Dify API to be healthy
         run: |
@@ -109,5 +111,6 @@ jobs:
 
       - name: Cleanup old docker assets
         run: |
-          docker system prune -f
+          cd infra/dify
+          docker-compose down --volumes --remove-orphans
           echo "✅ Cleanup completed"

@@ -80,14 +80,14 @@ services:
       # =====================================
       # Embedding: Gemini
       # =====================================
-      EMBEDDINGS_PROVIDER: "google"
-      EMBEDDING_MODEL: "models/embedding-001"
+      EMBEDDINGS_PROVIDER: "${EMBEDDINGS_PROVIDER:-google}"
+      EMBEDDING_MODEL: "${EMBEDDING_MODEL:-models/embedding-001}"
 
       # =====================================
       # File Storage: local（デフォルト）
       # =====================================
-      STORAGE_TYPE: "local"
-      UPLOAD_FILE_SIZE_LIMIT: "100"
+      STORAGE_TYPE: "${STORAGE_TYPE:-local}"
+      UPLOAD_FILE_SIZE_LIMIT: "${UPLOAD_FILE_SIZE_LIMIT:-100}"
 
       # =====================================
       # Auth settings
@@ -119,7 +119,6 @@ services:
   # =====================================
   dify-redis:
     image: "redis:7-alpine"
-    profiles: ["local"]
     container_name: dify-redis
     restart: unless-stopped
     ports:

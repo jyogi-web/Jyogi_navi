@@ -32,7 +32,7 @@
 
 再現性のため `latest` は使いません。バージョン更新時は `infra/dify/docker-compose.yml` と本ドキュメントを同時更新してください。
 
-> 💡 これらのセットアップ手順は [external-services-setup.md] を参照してください
+> 💡 外部サービスの接続情報は [.env.example](./.env.example) を参照してください
 
 ---
 
@@ -142,7 +142,7 @@ docker-compose ps
 ### 🌐 Dify UI にアクセス
 
 ブラウザで開く:
-```
+```text
 http://localhost:3000
 ```
 
@@ -490,7 +490,7 @@ nohup cloudflared tunnel run dify-jyogi &
 ### 5. DNS を設定
 
 Cloudflare Dashboard > DNS > Add Record
-```
+```text
 Type: CNAME
 Name: dify
 Content: dify-jyogi.cfargotunnel.com
