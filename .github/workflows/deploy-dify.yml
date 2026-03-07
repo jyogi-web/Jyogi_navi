@@ -22,7 +22,26 @@ jobs:
           docker-compose config > /dev/null
           echo "✅ docker-compose.yml syntax OK"
 
-      - name: Pull latest images
+      - name: Validate CORS settings
+        run: |
+          cd infra/dify
+          if [ -f ".env.dify" ]; then
+            set -a
+            . ./.env.dify
+            set +a
+          fi
+
+          effective_env="${DEPLOY_ENV:-docker}"
+          effective_cors="${CORS_ORIGINS:-}"
+
+          if [ "$effective_env" != "development" ] && [ "$effective_cors" = "*" ]; then
+            echo "❌ CORS_ORIGINS='*' is not allowed outside development"
+            exit 1
+          fi
+
+          echo "✅ CORS settings validated"
+
+      - name: Pull pinned images
         run: |
           cd infra/dify
           docker-compose pull

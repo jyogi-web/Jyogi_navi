@@ -5,7 +5,7 @@ services:
   # Dify Web UI
   # =====================================
   dify-web:
-    image: langgenius/dify-web:latest
+    image: langgenius/dify-web:1.13.0
     container_name: dify-web
     restart: unless-stopped
     ports:
@@ -28,7 +28,7 @@ services:
   # Dify API
   # =====================================
   dify-api:
-    image: langgenius/dify-api:latest
+    image: langgenius/dify-api:1.13.0
     container_name: dify-api
     restart: unless-stopped
     ports:
@@ -55,11 +55,11 @@ services:
       SQLALCHEMY_DATABASE_URI: "postgresql://${SUPABASE_DB_USER}:${SUPABASE_DB_PASSWORD}@${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT:-5432}/${SUPABASE_DB_NAME:-postgres}"
 
       # =====================================
-      # Cache & Task Queue: Upstash Redis
+      # Cache & Task Queue: Upstash Redis（未設定時はローカルRedisへフォールバック）
       # =====================================
-      REDIS_URL: "${UPSTASH_REDIS_URL}"
-      CELERY_BROKER_URL: "${UPSTASH_REDIS_URL}"
-      CELERY_RESULT_BACKEND: "${UPSTASH_REDIS_URL}"
+      REDIS_URL: "${UPSTASH_REDIS_URL:-redis://:${REDIS_PASSWORD:?REDIS_PASSWORD must be set for local redis}@dify-redis:6379}"
+      CELERY_BROKER_URL: "${UPSTASH_REDIS_URL:-redis://:${REDIS_PASSWORD:?REDIS_PASSWORD must be set for local redis}@dify-redis:6379}"
+      CELERY_RESULT_BACKEND: "${UPSTASH_REDIS_URL:-redis://:${REDIS_PASSWORD:?REDIS_PASSWORD must be set for local redis}@dify-redis:6379}"
 
       # =====================================
       # Vector DB: TiDB Serverless
@@ -97,10 +97,8 @@ services:
       # =====================================
       # CORS settings
       # =====================================
-      CORS_ORIGINS: "*"
+      CORS_ORIGINS: "${CORS_ORIGINS:-https://yourfrontend.domain}"
 
-    depends_on:
-      - dify-redis
     networks:
       - dify-network
     volumes:
@@ -121,17 +119,20 @@ services:
   # =====================================
   dify-redis:
     image: "redis:7-alpine"
+    profiles: ["local"]
     container_name: dify-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
-    command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD:-dify}"
+    environment:
+      REDIS_PASSWORD: "${REDIS_PASSWORD:?REDIS_PASSWORD must be set}"
+    command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD:?REDIS_PASSWORD must be set}"
     volumes:
       - dify-redis-data:/data
     networks:
       - dify-network
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: ["CMD-SHELL", "redis-cli -a \"$REDIS_PASSWORD\" --raw ping | grep -q PONG"]
       interval: 10s
       timeout: 3s
       retries: 3

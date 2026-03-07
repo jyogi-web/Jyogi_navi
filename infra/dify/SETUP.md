@@ -8,7 +8,7 @@
 ## 📋 目次
 
 1. [前提条件](#前提条件)
-2. [初回セットアップ（5分）](#初回セットアップ)
+2. [初回セットアップ](#初回セットアップ)
 3. [起動・停止方法](#起動・停止方法)
 4. [トラブルシューティング](#トラブルシューティング)
 5. [運用時のチェックリスト](#運用時のチェックリスト)
@@ -25,6 +25,13 @@
   - ✅ Upstash Redis インスタンス
   - ✅ Google Cloud API キー（Gemini）
 
+### 使用イメージタグ（固定）
+
+- `langgenius/dify-web:1.13.0`
+- `langgenius/dify-api:1.13.0`
+
+再現性のため `latest` は使いません。バージョン更新時は `infra/dify/docker-compose.yml` と本ドキュメントを同時更新してください。
+
 > 💡 これらのセットアップ手順は [external-services-setup.md] を参照してください
 
 ---
@@ -37,7 +44,7 @@
 cd infra/dify
 
 # テンプレートをコピー
-cp .env.dify.example .env.dify
+cp .env.example .env.dify
 ```
 
 ### ステップ 2: 環境変数を編集
@@ -64,6 +71,9 @@ TIDB_DATABASE=dify
 
 # Upstash Redis
 UPSTASH_REDIS_URL=redis://:password@host:6379
+
+# ローカルRedisを使う場合（UPSTASH_REDIS_URLを空のままにする）
+REDIS_PASSWORD=set-a-strong-random-secret
 
 # Google Gemini API
 GOOGLE_API_KEY=AIzaSy...
@@ -102,7 +112,10 @@ docker-compose config > /dev/null && echo "✅ OK"
 ```bash
 cd infra/dify
 
-# バックグラウンドで起動
+# ローカルRedisを使う場合（profile: local）
+docker-compose --profile local up -d
+
+# Upstash Redisを使う場合（UPSTASH_REDIS_URLを設定して起動）
 docker-compose up -d
 
 # ログをリアルタイム確認（オプション）
@@ -364,36 +377,68 @@ docker system prune -a
 
 ---
 
-## Next.js から Dify Chat API を呼び出す
+## Next.js から Dify Chat API を安全に呼び出す
 
-Dify が起動したら、Next.js のチャットUI から Chat API を使用できます。
+Dify APIキーはクライアントへ公開せず、サーバー側でのみ使用します。
+
+### 1) サーバー側 API Route で中継する
 
 ```typescript
-// apps/web/src/lib/dify.ts
+// apps/web/src/app/api/chat/route.ts
+import { NextRequest } from 'next/server';
 
-const DIFY_API_URL = process.env.NEXT_PUBLIC_DIFY_API_URL || 'http://localhost:5001';
-const DIFY_API_KEY = process.env.NEXT_PUBLIC_DIFY_API_KEY; // Dify UI > Api Key で取得
+export async function POST(req: NextRequest) {
+  const { query, user } = await req.json();
+  const difyApiUrl = process.env.DIFY_API_URL || 'http://localhost:5001';
+  const difyApiKey = process.env.DIFY_API_KEY;
 
-export async function sendChatMessage(query: string) {
-  const response = await fetch(`${DIFY_API_URL}/chat-messages`, {
+  if (!difyApiKey) {
+    return new Response('DIFY_API_KEY is not set', { status: 500 });
+  }
+
+  const response = await fetch(`${difyApiUrl}/chat-messages`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${DIFY_API_KEY}`,
+      'Authorization': `Bearer ${difyApiKey}`,
     },
     body: JSON.stringify({
       inputs: {},
-      query: query,
+      query,
       response_mode: 'streaming',
-      user: 'user-123',
+      user,
     }),
   });
 
-  return response.body?.getReader(); // ストリーミング対応
+  return new Response(response.body, {
+    status: response.status,
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    },
+  });
 }
 ```
 
-詳細は [apps/web/src/lib/dify.ts] を参照してください。
+### 2) クライアントは `/api/chat` のみ呼び出す
+
+```typescript
+// apps/web/src/lib/chat.ts
+export async function sendChatMessage(query: string, user: string) {
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query, user }),
+  });
+
+  return response.body?.getReader();
+}
+```
+
+`DIFY_API_KEY` はサーバー環境変数として管理し、`NEXT_PUBLIC_` プレフィックス付きで公開しないでください。
 
 ---
 
