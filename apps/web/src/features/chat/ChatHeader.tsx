@@ -24,6 +24,11 @@ export function ChatHeader({ messagesCount }: ChatHeaderProps) {
     }
   };
 
+  const handleMenuClick = () => {
+    // TODO: メニュー機能を実装
+    alert('メニュー機能は開発中です');
+  };
+
   return (
     <header className="border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-10">
       <div className="max-w-4xl mx-auto px-4 py-3">
@@ -57,7 +62,13 @@ export function ChatHeader({ messagesCount }: ChatHeaderProps) {
           </div>
 
           {/* 右側：メニューボタン */}
-          <Button variant="ghost" size="icon" className="rounded-full" aria-label="メニュー">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full"
+            aria-label="メニュー"
+            onClick={handleMenuClick}
+          >
             <MoreVertical className="h-5 w-5" />
           </Button>
         </div>
