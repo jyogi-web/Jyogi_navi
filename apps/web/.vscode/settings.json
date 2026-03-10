@@ -4,8 +4,13 @@
   "less.validate": false,
   "scss.validate": false,
   "stylelint.enable": true,
-  "stylelint.validate": ["css", "postcss"],
+  "stylelint.validate": ["css", "postcss", "scss"],
+  "stylelint.snippet": ["css", "postcss", "scss"],
   "editor.codeActionsOnSave": {
     "source.fixAll.stylelint": "explicit"
-  }
+  },
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+  ]
 }
