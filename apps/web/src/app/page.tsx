@@ -8,15 +8,24 @@ import { hasConsented } from '@/lib/session';
 export default function Home() {
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // クライアントのハイドレーションを待つ
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
+    // ハイドレーション後のみ同意チェックを実行
+    if (!isHydrated) return;
+
     // 同意済みかチェックし、済んでいればチャット画面へリダイレクト
     if (hasConsented()) {
       router.push('/chat');
     } else {
       setIsChecking(false);
     }
-  }, [router]);
+  }, [router, isHydrated]);
 
   if (isChecking) {
     return (

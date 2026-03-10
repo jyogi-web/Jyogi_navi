@@ -8,15 +8,24 @@ import { ChatContainer } from '@/features/chat';
 export default function ChatPage() {
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // クライアントのハイドレーションを待つ
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
+    // ハイドレーション後のみ同意チェックを実行
+    if (!isHydrated) return;
+
     // 未同意の場合はホームページへリダイレクト
     if (!hasConsented()) {
       router.push('/');
     } else {
       setIsChecking(false);
     }
-  }, [router]);
+  }, [router, isHydrated]);
 
   if (isChecking) {
     return (
