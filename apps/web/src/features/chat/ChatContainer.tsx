@@ -119,12 +119,13 @@ export function ChatContainer() {
                   <ChatMessage key={message.id} message={message} />
                 ))}
                 {isLoading && (
-                  <div className="flex items-center gap-3 mb-4">
+                  <div className="flex items-center gap-3 mb-4" role="status">
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-lg">
                       🐰
                     </div>
                     <div className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 border border-gray-200 dark:border-gray-700">
                       <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+                      <span className="sr-only">応答生成中</span>
                     </div>
                   </div>
                 )}
