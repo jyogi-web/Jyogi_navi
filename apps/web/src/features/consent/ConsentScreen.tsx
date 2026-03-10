@@ -75,7 +75,7 @@ export function ConsentScreen() {
               <div className="space-y-2">
                 <p className="font-semibold text-foreground">🔒 個人情報の取り扱い：</p>
                 <ul className="list-disc list-inside space-y-1 ml-2">
-                  <li>個人を特定する情報は収集しません</li>
+                  <li>自由記述には氏名・連絡先などの個人情報を含めないでください</li>
                   <li>収集したデータはじょぎ内部でのみ使用します</li>
                   <li>第三者への提供は行いません</li>
                 </ul>
