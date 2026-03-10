@@ -14,14 +14,21 @@ const CONSENT_KEY = 'jyogi_consent';
 export function getOrCreateSessionId(): string {
   if (typeof window === 'undefined') return '';
   
-  let sessionId = localStorage.getItem(SESSION_ID_KEY);
-  
-  if (!sessionId) {
-    sessionId = uuidv4();
-    localStorage.setItem(SESSION_ID_KEY, sessionId);
+  try {
+    let sessionId = localStorage.getItem(SESSION_ID_KEY);
+    
+    if (!sessionId) {
+      sessionId = uuidv4();
+      localStorage.setItem(SESSION_ID_KEY, sessionId);
+    }
+    
+    return sessionId;
+  } catch (error) {
+    // SecurityError や QuotaExceededError などでストレージアクセスが失敗した場合
+    // 生成したセッションIDを返すが永続化はしない
+    console.error('Failed to access localStorage:', error);
+    return uuidv4();
   }
-  
-  return sessionId;
 }
 
 /**
@@ -30,7 +37,12 @@ export function getOrCreateSessionId(): string {
 export function saveConsent(consented: boolean): void {
   if (typeof window === 'undefined') return;
   
-  localStorage.setItem(CONSENT_KEY, consented ? 'true' : 'false');
+  try {
+    localStorage.setItem(CONSENT_KEY, consented ? 'true' : 'false');
+  } catch (error) {
+    // SecurityError や QuotaExceededError などでストレージアクセスが失敗した場合は無視
+    console.error('Failed to save consent to localStorage:', error);
+  }
 }
 
 /**
@@ -39,7 +51,13 @@ export function saveConsent(consented: boolean): void {
 export function getConsent(): boolean {
   if (typeof window === 'undefined') return false;
   
-  return localStorage.getItem(CONSENT_KEY) === 'true';
+  try {
+    return localStorage.getItem(CONSENT_KEY) === 'true';
+  } catch (error) {
+    // SecurityError や QuotaExceededError などでストレージアクセスが失敗した場合は安全なデフォルト値を返す
+    console.error('Failed to get consent from localStorage:', error);
+    return false;
+  }
 }
 
 /**
