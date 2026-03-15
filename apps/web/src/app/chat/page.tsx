@@ -1,33 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import { hasConsented } from '@/lib/session';
 import { ChatContainer } from '@/features/chat';
 
+const subscribe = () => () => {};
+
 export default function ChatPage() {
   const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  // クライアントのハイドレーションを待つ
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
+  const isHydrated = useSyncExternalStore(subscribe, () => true, () => false);
+  const consented = isHydrated ? hasConsented() : false;
 
   useEffect(() => {
-    // ハイドレーション後のみ同意チェックを実行
-    if (!isHydrated) return;
-
     // 未同意の場合はホームページへリダイレクト
-    if (!hasConsented()) {
-      router.push('/');
-    } else {
-      setIsChecking(false);
+    if (isHydrated && !consented) {
+      router.replace('/');
     }
-  }, [router, isHydrated]);
+  }, [router, isHydrated, consented]);
 
-  if (isChecking) {
+  if (!isHydrated || !consented) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
