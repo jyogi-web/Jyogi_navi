@@ -40,7 +40,7 @@ export function ChatHeader({ messagesCount }: ChatHeaderProps) {
               size="icon"
               onClick={handleBack}
               className="rounded-full"
-              aria-label="戻る"
+              aria-label="ホームへ戻る（同意をリセット）"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>

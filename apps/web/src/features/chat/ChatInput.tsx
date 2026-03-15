@@ -11,6 +11,7 @@ import { Send, Loader2 } from 'lucide-react';
 const chatInputSchema = z.object({
   message: z
     .string()
+    .trim()
     .min(1, '質問を入力してください')
     .max(500, '質問は500文字以内で入力してください'),
 });
