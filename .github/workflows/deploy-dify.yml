@@ -21,15 +21,15 @@ jobs:
       - name: Check docker-compose.yml syntax
         run: |
           cd infra/dify
-          docker-compose --env-file .env.dify config > /dev/null
+          docker-compose --env-file .env config > /dev/null
           echo "✅ docker-compose.yml syntax OK"
 
       - name: Validate CORS settings
         run: |
           cd infra/dify
-          if [ -f ".env.dify" ]; then
+          if [ -f ".env" ]; then
             set -a
-            . ./.env.dify
+            . ./.env
             set +a
           fi
 
@@ -46,12 +46,12 @@ jobs:
       - name: Pull pinned images
         run: |
           cd infra/dify
-          docker-compose --env-file .env.dify pull
+          docker-compose --env-file .env pull
 
       - name: Start Dify services
         run: |
           cd infra/dify
-          docker-compose --env-file .env.dify up -d
+          docker-compose --env-file .env up -d
 
       - name: Wait for Dify API to be healthy
         run: |

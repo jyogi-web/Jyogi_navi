@@ -44,14 +44,14 @@
 cd infra/dify
 
 # テンプレートをコピー
-cp .env.example .env.dify
+cp .env.example .env
 ```
 
 ### ステップ 2: 環境変数を編集
 
 ```bash
-# .env.dify を開いて各キーを入力
-nano .env.dify  # または vim / VSCode で編集
+# .env を開いて各キーを入力
+nano .env  # または vim / VSCode で編集
 ```
 
 **最小限必須の設定:**
@@ -90,7 +90,7 @@ DIFY_API_SECRET_KEY=your-api-secret-string
 python3 -c "import secrets; print('SECRET_KEY=' + secrets.token_hex(32))"
 python3 -c "import secrets; print('DIFY_API_SECRET_KEY=' + secrets.token_hex(32))"
 
-# 出力をコピーして .env.dify に貼り付け
+# 出力をコピーして .env に貼り付け
 ```
 
 ### ステップ 4: 起動確認
@@ -135,7 +135,7 @@ docker-compose ps
 # 出力例:
 # NAME                COMMAND                STATUS              PORTS
 # dify-api            "python  -m dify...."  Up 2 minutes        0.0.0.0:5001->5001/tcp
-# dify-web            "npm run start"        Up 2 minutes        0.0.0.0:3000->3000/tcp
+# dify-web            "npm run start"        Up 2 minutes        0.0.0.0:3001->3000/tcp
 # dify-redis          "redis-server..."      Up 2 minutes        0.0.0.0:6379->6379/tcp
 ```
 
@@ -143,7 +143,7 @@ docker-compose ps
 
 ブラウザで開く:
 ```text
-http://localhost:3000
+http://localhost:3001
 ```
 
 初回アクセス時:
@@ -180,7 +180,7 @@ sudo systemctl start docker
 原因チェック:
 ```bash
 # 1. 環境変数が正しいか確認
-cat .env.dify | grep SUPABASE
+cat .env | grep SUPABASE
 
 # 2. DB に ping を打つ（Linux/Mac）
 psql -h db.xxxxxxxxxxxxx.supabase.co -U postgres -d postgres -c "SELECT 1;"
@@ -194,7 +194,7 @@ psql -h db.xxxxxxxxxxxxx.supabase.co -U postgres -d postgres -c "SELECT 1;"
 docker-compose logs dify-api | tail -50
 
 # 環境変数を修正
-nano .env.dify
+nano .env
 
 # 再起動
 docker-compose restart dify-api
@@ -207,7 +207,7 @@ docker-compose restart dify-api
 チェック:
 ```bash
 # TiDB の接続文字列を確認
-cat .env.dify | grep TIDB
+cat .env | grep TIDB
 
 # TiDB Cloud Dashboard で接続状態を確認
 # Settings > Connection Strings でホスト/ポート確認
@@ -241,7 +241,7 @@ docker-compose exec dify-redis redis-cli ping
 docker-compose restart dify-redis
 
 # または Upstash を使用していれば:
-nano .env.dify
+nano .env
 # → UPSTASH_REDIS_URL に正しい URL を設定
 ```
 
@@ -257,20 +257,20 @@ nano .env.dify
 # 2. Gemini API が有効か確認
 #    https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com
 
-# 3. .env.dify で GOOGLE_API_KEY を確認
-cat .env.dify | grep GOOGLE_API_KEY
+# 3. .env で GOOGLE_API_KEY を確認
+cat .env | grep GOOGLE_API_KEY
 
 # 4. Dify UI > Model Provider > Google で キーを再設定
 ```
 
-### 🔴 「ポート 3000 または 5001 が既に使用中」
+### 🔴 「ポート 3001 または 5001 が既に使用中」
 
-症状: `Error: listen EADDRINUSE :::3000`
+症状: `Error: listen EADDRINUSE :::3001`
 
 解決方法:
 ```bash
 # 既存プロセスを確認（Linux/Mac）
-lsof -i :3000
+lsof -i :3001
 lsof -i :5001
 
 # プロセス終了
@@ -346,7 +346,7 @@ docker-compose exec dify-api rm -rf /var/log/dify/*
 
 ### 🚀 新機能を追加したとき
 
-1. `.env.dify` に新しい環境変数を追加
+1. `.env` に新しい環境変数を追加
 2. `docker-compose.yml` の `dify-api` environment セクションを更新
 3. Dify UI から Model Provider 設定を確認
 4. テスト送信で動作確認
@@ -473,7 +473,7 @@ ingress:
   - hostname: dify.yourdomain.com
     service: http://localhost:5001
   - hostname: yourdomain.com
-    service: http://localhost:3000
+    service: http://localhost:3001
   - service: http_status:404
 ```
 
