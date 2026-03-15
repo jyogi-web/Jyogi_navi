@@ -1,0 +1,193 @@
+language: "ja-JP"
+tone_instructions: "丁寧な日本語でレビューしてください。指摘は具体的かつ建設的に行い、修正案も可能な限り提示してください。"
+early_access: false
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  collapse_walkthrough: false
+  sequence_diagrams: true
+  suggested_labels: true
+  suggested_reviewers: false
+  auto_apply_labels: false
+
+  # ドキュメント整合性チェック用のパス除外設定
+  path_filters:
+    - "!**/*.lock"
+    - "!**/uv.lock"
+    - "!**/.env*"
+    - "!**/node_modules/**"
+    - "!**/__pycache__/**"
+    - "!**/.next/**"
+
+  path_instructions:
+    # ===== ドキュメント整合性チェック =====
+    - path: "docs/**"
+      instructions: |
+        このプロジェクトのdocs/ディレクトリはシステム設計の唯一の情報源です。
+        ドキュメント間の整合性を厳しくチェックしてください。
+
+        【チェックポイント】
+        1. 技術スタック（02_tech-stack.md）との整合性
+           - フロントエンド: Next.js(App Router) + TypeScript + shadcn/ui + Tailwind CSS
+           - バックエンド: FastAPI(Python) + Cloud Run
+           - DB: Supabase(PostgreSQL, Dify内部専用) / TiDB Serverless(アプリログ・監査・RAG)
+           - RAG: Dify(セルフホスト, 自宅PC) + Gemini
+           - 認証: Auth.js + Discord OAuth（管理画面のみ, P1）
+           - インフラ: Cloudflare Pages / Cloud Run / 自宅PC(Docker)
+
+        2. ERD（05_erd.md）との整合性
+           - テーブル名・カラム名・型・FK関係が他ドキュメントと一致しているか
+           - DB分担（Supabase=Dify専用, TiDB=アプリ用）が正しいか
+
+        3. 権限設計（04_permission-design.md）との整合性
+           - ロール: ADMIN(80) / MEMBER(50) / GUEST(10)
+           - 新入生はGUEST（認証不要、公開）
+           - 管理画面はP1（Discord OAuth必須）
+
+        4. フェーズ整合性
+           - P0のみ実装されているべき機能とP1以降の機能が混在していないか
+           - MVPに不要な機能がP0として記載されていないか
+
+        矛盾や不整合を発見した場合は、どちらのドキュメントを修正すべきか提案してください。
+
+    # ===== フロントエンド =====
+    - path: "apps/web/**"
+      instructions: |
+        【技術スタック確認】
+        - Next.js App Router（OpenNext経由でCloudflare Pages対応）
+        - TypeScript（型安全必須）
+        - shadcn/ui + Tailwind CSS（UIライブラリ）
+        - TanStack Query（サーバー状態管理）
+        - React Hook Form + Zod（フォーム・バリデーション）
+        - Vitest（テスト）
+
+        【設計整合性チェック】
+        1. ディレクトリ構成（docs/06_directory.md）との整合性
+           - features/以下はchat/, consent/, feedback/の3つのみ（P0）
+           - lib/api.ts（Backend APIクライアント）とlib/dify.ts（Dify呼び出し）のみ
+           - admin機能（P1）がP0のapps/webに混入していないか
+
+        2. 機能一覧（docs/01_feature-list.md）との整合性
+           - P0必須: チャットUI(B-1), 同意画面(D-1), ローディング(D-2), セッション管理(F-1)
+           - P1以降の機能（Discord OAuth, 管理画面など）がP0に混入していないか
+
+        3. セキュリティ・プライバシー
+           - メッセージ本文をクライアント側でも保存・送信していないか
+           - セッションIDはcookieで管理されているか（docs/01_feature-list.md F-1）
+           - フロントはUX制御のみ、最終判定は必ずサーバー側で行うこと（docs/04_permission-design.md）
+
+        4. パフォーマンス要件
+           - UI操作: 500ms以内（docs/02_tech-stack.md）
+           - LLM応答待ちのローディング表示は必須（D-2）
+
+        5. Cloudflare対応
+           - Node.js専用APIを使用していないか（Edge Runtime互換性）
+           - OpenNext固有の制約に違反していないか
+
+    # ===== バックエンドAPI =====
+    - path: "apps/api/**"
+      instructions: |
+        【技術スタック確認】
+        - Python + FastAPI
+        - Pydantic（型安全・スキーマ定義必須）
+        - Supabase-py（DBアクセス）
+        - Cloud Run（Scale to Zero対応）
+        - uv（パッケージ管理）
+
+        【設計整合性チェック】
+        1. ディレクトリ構成（docs/06_directory.md）との整合性
+           - routers/: feedback.py, consent.py, health.py のみ（P0）
+           - services/: pii_mask.py, log_store.py, rate_limit.py のみ（P0）
+           - models/: feedback.py, session.py のみ（P0）
+           - 認証系エンドポイントはP1（Discord OAuthなど）
+
+        2. DB整合性（docs/05_erd.md との照合）
+           - TiDBへのアクセス先テーブル: sessions, usage_logs, feedbacks, audit_logs
+           - Supabase は Dify専用（アプリコードからアクセスしないこと）
+           - カラム名・型が05_erd.mdと一致しているか
+           - usage_logsにメッセージ本文を保存していないか（方針違反）
+
+        3. セキュリティ
+           - PII（個人情報）マスキング（pii_mask.py）が適用されているか
+           - レート制限（rate_limit.py）がusage_logsベースで実装されているか
+           - 認証はP1実装。P0では不要だが、P0段階で認証ロジックを混入させない
+           - audit_logsへの書き込みは管理操作時のみ
+
+        4. ログ設計（docs/08_logging.md との照合）
+           - 構造化JSON形式でログを出力しているか
+           - trace_idが全レスポンスに含まれているか
+           - パスワード・トークン・メールアドレスをログに出力していないか
+
+        5. Cloud Run対応
+           - ステートレスな実装になっているか
+           - 環境変数は.env.exampleに定義されているか
+
+    # ===== 管理画面（P1） =====
+    - path: "apps/admin/**"
+      instructions: |
+        【P1機能である点を重視】
+        管理画面はPhase 1実装です。P0のapps/webへの依存・混入がないか確認してください。
+
+        【技術スタック確認（apps/webと同様）】
+        - Next.js App Router + TypeScript + shadcn/ui + Tailwind CSS
+
+        【設計整合性チェック】
+        1. 権限設計（docs/04_permission-design.md）との整合性
+           - Discord OAuth認証が実装されているか
+           - RBAC（ADMIN/MEMBER）が正しく実装されているか
+           - フロント制御はUXのみ、最終判定はサーバー側か
+
+        2. 機能スコープ（docs/04_permission-design.md 3-2）
+           - MEMBER可: conversations(read), feedbacks(read), kpi_metrics(read), ingestion_runs(read)
+           - ADMIN追加: ingestion_runs(execute), faq_entries(CRUD), system_settings(read/update)
+
+        3. 監査ログ
+           - 管理操作（設定変更・RAG切替・FAQ編集など）でaudit_logsに記録しているか
+           - audit_logsの構造がERD（docs/05_erd.md）と一致しているか
+
+    # ===== インフラ・CI/CD =====
+    - path: ".github/**"
+      instructions: |
+        【CI/CDパイプライン（docs/07_infrastructure.md, 06_directory.md）との整合性】
+        - deploy-fe.yml: Cloudflare Pagesへのデプロイ（cloud-hosted runner）
+        - deploy-api.yml: Cloud Runへのデプロイ（cloud-hosted runner）
+        - deploy-dify.yml: self-hosted runnerでdocker-compose操作
+
+        【セキュリティ確認】
+        - シークレット（APIキー・トークン）がハードコードされていないか
+        - .env系ファイルがコミットされていないか
+
+    - path: "infra/**"
+      instructions: |
+        【インフラ設計（docs/07_infrastructure.md）との整合性】
+        - Dify: 自宅PC上のDocker（docker-compose公式構成）
+        - API: Cloud Run（Dockerfile必要）
+        - FE: Cloudflare Pages（Dockerfileは不要）
+        - 環境変数テンプレート（.env.example）が最新化されているか
+
+    # ===== スクリプト =====
+    - path: "scripts/**"
+      instructions: |
+        【データ取り込みスクリプト（docs/06_directory.md 5️⃣）との整合性】
+        - Discord/Notionのエクスポート・正規化処理が目的
+        - PII除去（個人情報・不要情報の削除）が実施されているか（A-2）
+        - 出力形式がDifyの取り込みフォーマットに合っているか
+
+    # ===== テスト =====
+    - path: "tests/**"
+      instructions: |
+        【テスト構成（docs/06_directory.md 8️⃣）との整合性】
+        - unit/: pii_mask/, rate_limit/ のカバレッジ確認
+        - integration/: api/, db/ の結合テスト
+        - e2e/: chat-flow.spec.ts（チャット基本フロー）
+
+        【重点確認事項】
+        - PII（個人情報）マスキングのテストは必須
+        - レート制限ロジックのテストは必須
+        - 実DBを使ったintegrationテストが含まれているか
+
+chat:
+  auto_reply: true
