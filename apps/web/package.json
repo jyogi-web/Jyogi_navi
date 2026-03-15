@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "lint:css": "stylelint \"**/*.css\" --allow-empty-input",
-    "test": "vitest",
+    "test": "vitest run",
     "test:run": "vitest run",
     "test:watch": "vitest"
   },
