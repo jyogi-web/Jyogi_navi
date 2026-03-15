@@ -13,3 +13,7 @@ Thumbs.db
 !.env.example
 
 .mcp.json
+
+# Coverage reports
+coverage.xml
+.coverage

@@ -1,7 +1,7 @@
 # 06_directory
 
 作成日時: 2026年3月1日 17:36
-最終更新日時: 2026年3月3日 12:21
+最終更新日時: 2026年3月15日
 最終更新者: KOU050223
 
 # 📁 ディレクトリ構成図
@@ -57,6 +57,8 @@ apps/web/
 │   └── lib/
 │       ├── api.ts            # Backend APIクライアント
 │       └── dify.ts           # Dify Chat API呼び出し
+├── vitest.config.ts          # Vitest 設定
+├── vitest.setup.ts           # テストセットアップ（jest-dom等）
 ├── package.json
 └── next.config.ts
 ```
@@ -86,6 +88,14 @@ apps/api/
 │   ├── __init__.py
 │   ├── feedback.py
 │   └── session.py
+├── tests/
+│   ├── conftest.py           # fixture（db.session モック等）
+│   ├── unit/
+│   │   ├── pii_mask/         # PII マスク単体テスト
+│   │   └── rate_limit/       # レートリミット単体テスト
+│   └── integration/
+│       ├── api/              # エンドポイント統合テスト
+│       └── db/               # DB アクセス統合テスト
 ├── Dockerfile
 ├── pyproject.toml            # uv パッケージ管理
 ├── uv.lock                   # uv ロックファイル
@@ -187,14 +197,37 @@ git push (main)
 
 # 8️⃣ テスト構成
 
+## FE（apps/web）
+
+- フレームワーク: Vitest + Testing Library
+- 配置: **コロケーション**（テスト対象ファイルと同じディレクトリに `*.test.tsx` / `*.spec.tsx` を置く）
+
 ```
-tests/
+apps/web/src/
+├── features/
+│   ├── chat/
+│   │   ├── ChatContainer.tsx
+│   │   └── ChatContainer.test.tsx   # コロケーション
+│   └── consent/
+│       ├── ConsentScreen.tsx
+│       └── ConsentScreen.test.tsx
+└── lib/
+    ├── api.ts
+    └── api.test.ts
+```
+
+## BE（apps/api）
+
+- フレームワーク: pytest + pytest-asyncio
+- 配置: `apps/api/tests/` 配下に unit / integration で分類
+
+```
+apps/api/tests/
+├── conftest.py               # fixture（db.session モック等）
 ├── unit/
-│   ├── pii_mask/
-│   └── rate_limit/
-├── integration/
-│   ├── api/
-│   └── db/
-└── e2e/
-    └── chat-flow.spec.ts
+│   ├── pii_mask/             # PII マスク単体テスト
+│   └── rate_limit/           # レートリミット単体テスト
+└── integration/
+    ├── api/                  # エンドポイント統合テスト
+    └── db/                   # DB アクセス統合テスト
 ```
