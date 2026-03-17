@@ -1,22 +1,26 @@
 pre-commit:
   parallel: true
   jobs:
-    # FE: eslint
+    # FE: eslint (自動修正)
     - name: lint-fe
       glob: "apps/web/**/*.{ts,tsx}"
-      run: pnpm --filter web lint
+      run: pnpm --filter web lint --fix
+      stage_fixed: true
 
-    # FE: stylelint
+    # FE: stylelint (自動修正)
     - name: lint-css
       glob: "apps/web/**/*.css"
-      run: pnpm --filter web lint:css
+      run: pnpm --filter web lint:css --fix
+      stage_fixed: true
 
-    # BE: ruff lint
+    # BE: ruff lint (自動修正)
     - name: lint-be
       glob: "apps/api/**/*.py"
-      run: uv run --project apps/api ruff check {staged_files}
+      run: uv run --project apps/api ruff check --fix {staged_files}
+      stage_fixed: true
 
-    # BE: ruff format check
+    # BE: ruff format (自動修正)
     - name: format-be
       glob: "apps/api/**/*.py"
-      run: uv run --project apps/api ruff format --check {staged_files}
+      run: uv run --project apps/api ruff format {staged_files}
+      stage_fixed: true
