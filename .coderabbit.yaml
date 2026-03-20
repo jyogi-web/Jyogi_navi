@@ -16,6 +16,8 @@ reviews:
     - "!**/node_modules/**"
     - "!**/__pycache__/**"
     - "!**/.next/**"
+    - "!apps/web/src/client/**"
+    - "!apps/api/openapi.json"
 
   path_instructions:
     - path: "**"
