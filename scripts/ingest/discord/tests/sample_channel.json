@@ -1,0 +1,83 @@
+{
+  "guild": {
+    "id": "1234567890",
+    "name": "JYOGI"
+  },
+  "channel": {
+    "id": "9876543210",
+    "name": "general-members",
+    "type": "GuildTextChat"
+  },
+  "messages": [
+    {
+      "id": "1001",
+      "timestamp": "2024-01-15T10:00:00+09:00",
+      "author": {
+        "id": "111",
+        "name": "Alice",
+        "isBot": false
+      },
+      "content": "おはようございます！今日の勉強会の資料ここに置いておきます。 https://example.com/slides"
+    },
+    {
+      "id": "1002",
+      "timestamp": "2024-01-15T10:05:00+09:00",
+      "author": {
+        "id": "222",
+        "name": "Bob",
+        "isBot": false
+      },
+      "content": "<@!111> ありがとうございます！確認しました。"
+    },
+    {
+      "id": "1003",
+      "timestamp": "2024-01-15T10:06:00+09:00",
+      "author": {
+        "id": "333",
+        "name": "NotifyBot",
+        "isBot": true
+      },
+      "content": "リマインダー: 今日15時から定例会議があります。"
+    },
+    {
+      "id": "1004",
+      "timestamp": "2024-01-15T10:10:00+09:00",
+      "author": {
+        "id": "444",
+        "name": "Charlie",
+        "isBot": false
+      },
+      "content": "👍"
+    },
+    {
+      "id": "1005",
+      "timestamp": "2024-01-15T10:15:00+09:00",
+      "author": {
+        "id": "555",
+        "name": "Dave",
+        "isBot": false
+      },
+      "content": "問い合わせは dave@example.com までお願いします。"
+    },
+    {
+      "id": "1006",
+      "timestamp": "2024-01-15T11:00:00+09:00",
+      "author": {
+        "id": "111",
+        "name": "Alice",
+        "isBot": false
+      },
+      "content": "定例会議の議事録まとめました。今月の活動について話し合いましょう。"
+    },
+    {
+      "id": "1007",
+      "timestamp": "2024-01-15T11:05:00+09:00",
+      "author": {
+        "id": "666",
+        "name": "Eve",
+        "isBot": false
+      },
+      "content": ""
+    }
+  ]
+}

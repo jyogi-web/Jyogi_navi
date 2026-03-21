@@ -21,5 +21,10 @@ coverage.xml
 # Turborepo
 .turbo/
 
+# Discord ingest (raw logs and processed output must not be committed)
+scripts/ingest/discord/raw/
+scripts/ingest/discord/out/
+scripts/ingest/discord/tests/out/
+
 # Node.js
 node_modules/
