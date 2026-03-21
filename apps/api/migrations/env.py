@@ -1,13 +1,14 @@
 """Alembic 環境設定 (非同期対応)."""
 
 import asyncio
+import ssl as ssl_mod
 import sys
 from logging.config import fileConfig
 from pathlib import Path
 
 from alembic import context
 from sqlalchemy import pool
-from sqlalchemy.engine import Connection
+from sqlalchemy.engine import URL, Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 # apps/api をモジュール検索パスに追加
@@ -27,12 +28,25 @@ def _get_url() -> str:
     """環境変数から接続URLを構築する。alembic.ini の値より優先。"""
     from config import settings
 
-    return (
-        f"mysql+aiomysql://{settings.tidb_user}"
-        f":{settings.tidb_password.get_secret_value()}"
-        f"@{settings.tidb_host}:{settings.tidb_port}"
-        f"/{settings.tidb_database}"
+    url = URL.create(
+        drivername="mysql+aiomysql",
+        username=settings.tidb_user,
+        password=settings.tidb_password.get_secret_value(),
+        host=settings.tidb_host,
+        port=settings.tidb_port,
+        database=settings.tidb_database,
     )
+    return url.render_as_string(hide_password=False)
+
+
+def _get_connect_args() -> dict:
+    """SSL 接続引数を構築する。db/session.py と同じパターン。"""
+    from config import settings
+
+    if settings.tidb_ssl_ca:
+        ssl_ctx = ssl_mod.create_default_context(cafile=settings.tidb_ssl_ca)
+        return {"ssl": ssl_ctx}
+    return {}
 
 
 def run_migrations_offline() -> None:
@@ -64,6 +78,7 @@ async def run_async_migrations() -> None:
         configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        connect_args=_get_connect_args(),
     )
 
     async with connectable.connect() as connection:
