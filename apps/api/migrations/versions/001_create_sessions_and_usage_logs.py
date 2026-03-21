@@ -28,7 +28,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "created_at",
-            sa.String(26),
+            sa.DateTime(),
             nullable=False,
             server_default=sa.func.now(),
         ),
@@ -49,7 +49,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "created_at",
-            sa.String(26),
+            sa.DateTime(),
             nullable=False,
             server_default=sa.func.now(),
         ),
