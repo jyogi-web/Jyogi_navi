@@ -81,6 +81,12 @@ GOOGLE_API_KEY=AIzaSy...
 # Secret keys（生成: python3 -c "import secrets; print(secrets.token_hex(32))"）
 SECRET_KEY=your-random-string
 DIFY_API_SECRET_KEY=your-api-secret-string
+
+# Dify Web ポート（競合時は変更可）
+DIFY_WEB_PORT=3101
+
+# ローカルUIから API(5001) を叩くための CORS 許可
+CORS_ORIGINS=http://localhost:3101,http://127.0.0.1:3101
 ```
 
 ### ステップ 3: Secret Keys を生成（一度だけ）
@@ -243,6 +249,37 @@ docker-compose restart dify-redis
 # または Upstash を使用していれば:
 nano .env
 # → UPSTASH_REDIS_URL に正しい URL を設定
+```
+
+### 🔴 「CORSエラーに見えるが実際はログイン500になる」
+
+症状:
+- ブラウザで CORS エラー表示
+- 同時に `/console/api/login` が 500
+
+原因:
+- `dify-api` が Supabase に接続できず、認証処理が内部エラー化している
+- `.env` の `SUPABASE_DB_HOST` などがプレースホルダのまま
+
+確認方法:
+```bash
+docker-compose logs --tail=150 dify-api
+```
+
+以下のようなエラーが出る場合は DB 接続設定が未完了:
+```text
+psycopg2.OperationalError: could not translate host name "db.xxxxxxxxxxxxx.supabase.co"
+```
+
+解決方法:
+```bash
+# 1) .env の Supabase 接続情報を実値に更新
+nano .env
+
+# 2) API を再起動
+docker-compose up -d dify-api
+
+# 3) ブラウザをハードリロード
 ```
 
 ### 🔴 「Gemini API キーが無効」
