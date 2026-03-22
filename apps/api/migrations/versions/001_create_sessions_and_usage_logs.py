@@ -23,12 +23,10 @@ def upgrade() -> None:
         "sessions",
         sa.Column("id", sa.String(36), primary_key=True),
         sa.Column("is_guest", sa.Boolean(), nullable=False, server_default=sa.true()),
-        sa.Column(
-            "consented", sa.Boolean(), nullable=False, server_default=sa.false()
-        ),
+        sa.Column("consented", sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.Column(
             "created_at",
-            sa.String(26),
+            sa.DateTime(),
             nullable=False,
             server_default=sa.func.now(),
         ),
@@ -49,7 +47,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "created_at",
-            sa.String(26),
+            sa.DateTime(),
             nullable=False,
             server_default=sa.func.now(),
         ),

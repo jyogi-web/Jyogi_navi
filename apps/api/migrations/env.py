@@ -25,18 +25,33 @@ target_metadata = Base.metadata
 
 
 def _get_url() -> str:
-    """環境変数から接続URLを構築する。alembic.ini の値より優先。"""
+    """環境変数から接続URLを構築する。alembic.ini の値より優先。
+
+    必須フィールド (tidb_user, tidb_host, tidb_database) がすべて設定されている
+    場合は環境変数から URL を生成する。いずれかが空の場合は alembic.ini の
+    sqlalchemy.url にフォールバックする。
+    """
     from config import settings
 
-    url = URL.create(
-        drivername="mysql+aiomysql",
-        username=settings.tidb_user,
-        password=settings.tidb_password.get_secret_value(),
-        host=settings.tidb_host,
-        port=settings.tidb_port,
-        database=settings.tidb_database,
+    if settings.tidb_user and settings.tidb_host and settings.tidb_database:
+        url = URL.create(
+            drivername="mysql+aiomysql",
+            username=settings.tidb_user,
+            password=settings.tidb_password.get_secret_value(),
+            host=settings.tidb_host,
+            port=settings.tidb_port,
+            database=settings.tidb_database,
+        )
+        return url.render_as_string(hide_password=False)
+
+    fallback = config.get_main_option("sqlalchemy.url")
+    if fallback:
+        return fallback
+
+    raise RuntimeError(
+        "DB接続情報が不足しています。環境変数 (TIDB_USER, TIDB_HOST, TIDB_DATABASE) "
+        "を設定するか、alembic.ini の sqlalchemy.url を指定してください。"
     )
-    return url.render_as_string(hide_password=False)
 
 
 def _get_connect_args() -> dict:
