@@ -70,7 +70,7 @@ TIDB_PASSWORD=your-password
 TIDB_DATABASE=dify
 
 # Upstash Redis
-UPSTASH_REDIS_URL=redis://:password@host:6379
+UPSTASH_REDIS_URL=rediss://default:password@host:6379
 
 # ローカルRedisを使う場合（UPSTASH_REDIS_URLを空のままにする）
 REDIS_PASSWORD=set-a-strong-random-secret
@@ -119,7 +119,8 @@ docker-compose config > /dev/null && echo "✅ OK"
 cd infra/dify
 
 # ローカルRedisを使う場合（profile: local）
-docker-compose --profile local up -d
+# ローカルRedisを使う場合（UPSTASH_REDIS_URL を未設定にする）
+docker-compose up -d
 
 # Upstash Redisを使う場合（UPSTASH_REDIS_URLを設定して起動）
 docker-compose up -d
