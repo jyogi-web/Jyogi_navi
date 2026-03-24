@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.session import get_db_session
-from models.session import UsageLogCreate, UsageLogResponse
+from schemas.session import UsageLogCreate, UsageLogResponse
 from services.log_store import save_usage_log
 
 router = APIRouter(prefix="/usage-logs", tags=["usage-logs"])
