@@ -107,10 +107,12 @@
         "properties": {
           "session_id": {
             "type": "string",
+            "minLength": 1,
             "title": "Session Id"
           },
           "tokens": {
             "type": "integer",
+            "minimum": 1.0,
             "title": "Tokens"
           },
           "category": {
@@ -130,7 +132,8 @@
           "session_id",
           "tokens"
         ],
-        "title": "UsageLogCreate"
+        "title": "UsageLogCreate",
+        "description": "トークン消費ログ作成リクエスト。"
       },
       "UsageLogResponse": {
         "properties": {
@@ -171,7 +174,8 @@
           "category",
           "created_at"
         ],
-        "title": "UsageLogResponse"
+        "title": "UsageLogResponse",
+        "description": "トークン消費ログレスポンス。"
       },
       "ValidationError": {
         "properties": {
