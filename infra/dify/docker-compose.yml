@@ -40,8 +40,8 @@ services:
       # Plugin daemon
       # =====================================
       PLUGIN_DAEMON_URL: "${PLUGIN_DAEMON_URL:-http://dify-plugin-daemon:5002}"
-      PLUGIN_DAEMON_KEY: "${PLUGIN_DAEMON_KEY:-plugin-api-key}"
-      INNER_API_KEY_FOR_PLUGIN: "${PLUGIN_DIFY_INNER_API_KEY:-inner-api-key}"
+      PLUGIN_DAEMON_KEY: "${PLUGIN_DAEMON_KEY:?PLUGIN_DAEMON_KEY must be set}"
+      INNER_API_KEY_FOR_PLUGIN: "${PLUGIN_DIFY_INNER_API_KEY:?PLUGIN_DIFY_INNER_API_KEY must be set}"
 
       # =====================================
       # Database: Supabase (PostgreSQL)
@@ -102,6 +102,10 @@ services:
       # =====================================
       # CORS settings
       # =====================================
+      # NOTE:
+      # - The fallback URL below is only a placeholder for non-local environments.
+      # - For local development, set CORS_ORIGINS in .env (e.g. http://127.0.0.1:3101).
+      # - Keep the ${CORS_ORIGINS:-...} pattern so explicit .env values still override defaults.
       CORS_ORIGINS: "${CORS_ORIGINS:-https://yourfrontend.domain}"
       CONSOLE_CORS_ALLOW_ORIGINS: "${CORS_ORIGINS:-https://yourfrontend.domain}"
       WEB_API_CORS_ALLOW_ORIGINS: "${CORS_ORIGINS:-https://yourfrontend.domain}"
@@ -138,10 +142,10 @@ services:
     environment:
       LOG_LEVEL: "${LOG_LEVEL:-INFO}"
       DB_TYPE: "postgresql"
-      DB_HOST: "${DB_PLUGIN_HOST}"
+      DB_HOST: "${DB_PLUGIN_HOST:?DB_PLUGIN_HOST must be set}"
       DB_PORT: "${DB_PLUGIN_PORT:-5432}"
-      DB_USERNAME: "${DB_PLUGIN_USER}"
-      DB_PASSWORD: "${DB_PLUGIN_PASSWORD}"
+      DB_USERNAME: "${DB_PLUGIN_USER:?DB_PLUGIN_USER must be set}"
+      DB_PASSWORD: "${DB_PLUGIN_PASSWORD:?DB_PLUGIN_PASSWORD must be set}"
       DB_DATABASE: "${DB_PLUGIN_DATABASE:-dify_plugin}"
       REDIS_HOST: "${UPSTASH_REDIS_HOST:-dify-redis}"
       REDIS_PORT: "${UPSTASH_REDIS_PORT:-6379}"
@@ -149,9 +153,9 @@ services:
       REDIS_PASSWORD: "${UPSTASH_REDIS_PASSWORD:-${REDIS_PASSWORD:?REDIS_PASSWORD must be set for local redis}}"
       REDIS_USE_SSL: "${UPSTASH_REDIS_USE_SSL:-false}"
       SERVER_PORT: "${PLUGIN_DAEMON_PORT:-5002}"
-      SERVER_KEY: "${PLUGIN_DAEMON_KEY:-plugin-api-key}"
+      SERVER_KEY: "${PLUGIN_DAEMON_KEY:?PLUGIN_DAEMON_KEY must be set}"
       DIFY_INNER_API_URL: "${PLUGIN_DIFY_INNER_API_URL:-http://dify-api:5001}"
-      DIFY_INNER_API_KEY: "${PLUGIN_DIFY_INNER_API_KEY:-inner-api-key}"
+      DIFY_INNER_API_KEY: "${PLUGIN_DIFY_INNER_API_KEY:?PLUGIN_DIFY_INNER_API_KEY must be set}"
       PLUGIN_REMOTE_INSTALLING_HOST: "${PLUGIN_DEBUGGING_HOST:-0.0.0.0}"
       PLUGIN_REMOTE_INSTALLING_PORT: "${PLUGIN_DEBUGGING_PORT:-5003}"
       PLUGIN_WORKING_PATH: "${PLUGIN_WORKING_PATH:-/app/storage/cwd}"
@@ -161,7 +165,8 @@ services:
     expose:
       - "${PLUGIN_DAEMON_PORT:-5002}"
     depends_on:
-      - dify-api
+      dify-api:
+        condition: service_healthy
     networks:
       - dify-network
     volumes:

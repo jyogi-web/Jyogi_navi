@@ -118,7 +118,6 @@ docker-compose config > /dev/null && echo "✅ OK"
 ```bash
 cd infra/dify
 
-# ローカルRedisを使う場合（profile: local）
 # ローカルRedisを使う場合（UPSTASH_REDIS_URL を未設定にする）
 docker-compose up -d
 
@@ -259,6 +258,35 @@ nano .env
 
 ### 🔴 「CORSエラーに見えるが実際はログイン500になる」
 
+症状:
+- ブラウザで CORS エラー表示
+- 同時に `/console/api/login` が 500
+
+原因:
+- `dify-api` が Supabase に接続できず、認証処理が内部エラー化している
+- `.env` の `SUPABASE_DB_HOST` などがプレースホルダのまま
+
+確認方法:
+```bash
+docker-compose logs --tail=150 dify-api
+```
+
+以下のようなエラーが出る場合は DB 接続設定が未完了:
+```text
+psycopg2.OperationalError: could not translate host name "db.xxxxxxxxxxxxx.supabase.co"
+```
+
+解決方法:
+```bash
+# 1) .env の Supabase 接続情報を実値に更新
+nano .env
+
+# 2) API を再起動
+docker-compose up -d dify-api
+
+# 3) ブラウザをハードリロード
+```
+
 ### 🔴 「Failed to request plugin daemon / ConnectError [Errno 111]」
 
 症状: `dify-api` ログに `Failed to request plugin daemon` が大量に出る
@@ -291,35 +319,6 @@ docker-compose up -d
 
 # 反映後に API を再起動
 docker-compose restart dify-api
-```
-
-症状:
-- ブラウザで CORS エラー表示
-- 同時に `/console/api/login` が 500
-
-原因:
-- `dify-api` が Supabase に接続できず、認証処理が内部エラー化している
-- `.env` の `SUPABASE_DB_HOST` などがプレースホルダのまま
-
-確認方法:
-```bash
-docker-compose logs --tail=150 dify-api
-```
-
-以下のようなエラーが出る場合は DB 接続設定が未完了:
-```text
-psycopg2.OperationalError: could not translate host name "db.xxxxxxxxxxxxx.supabase.co"
-```
-
-解決方法:
-```bash
-# 1) .env の Supabase 接続情報を実値に更新
-nano .env
-
-# 2) API を再起動
-docker-compose up -d dify-api
-
-# 3) ブラウザをハードリロード
 ```
 
 ### 🔴 「Gemini API キーが無効」
