@@ -56,7 +56,7 @@ class UsageLog(Base):
     category: Mapped[str] = mapped_column(String(50), default="")
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
-        server_default=func.now(),
+        server_default=func.utc_timestamp(),
     )
 
     session: Mapped["Session"] = relationship(back_populates="usage_logs")
