@@ -143,6 +143,7 @@ docker-compose ps
 # NAME                COMMAND                STATUS              PORTS
 # dify-api            "python  -m dify...."  Up 2 minutes        0.0.0.0:5001->5001/tcp
 # dify-web            "npm run start"        Up 2 minutes        0.0.0.0:3101->3000/tcp
+# dify-plugin-daemon  "./main"               Up 2 minutes        5002/tcp
 # dify-redis          "redis-server..."      Up 2 minutes        0.0.0.0:6379->6379/tcp
 ```
 
@@ -257,6 +258,40 @@ nano .env
 ```
 
 ### 🔴 「CORSエラーに見えるが実際はログイン500になる」
+
+### 🔴 「Failed to request plugin daemon / ConnectError [Errno 111]」
+
+症状: `dify-api` ログに `Failed to request plugin daemon` が大量に出る
+
+原因:
+- `dify-plugin-daemon` が未起動
+- `PLUGIN_DAEMON_URL` と `PLUGIN_DAEMON_KEY` が不一致
+- plugin-daemon の DB が Supabase transaction pooler(6543) へ接続され、`prepared statement already exists (42P05)` でクラッシュ
+
+チェック:
+```bash
+docker-compose ps
+docker-compose logs -f dify-plugin-daemon
+docker-compose exec dify-api sh -lc 'echo "$PLUGIN_DAEMON_URL"; echo "$PLUGIN_DAEMON_KEY"'
+docker-compose exec dify-plugin-daemon sh -lc 'echo "$DB_HOST:$DB_PORT/$DB_DATABASE"'
+```
+
+解決方法:
+```bash
+# plugin-daemon は DB を専用設定にする（既定 5432）
+# .env 例:
+# DB_PLUGIN_HOST=aws-1-ap-southeast-1.pooler.supabase.com
+# DB_PLUGIN_PORT=5432
+# DB_PLUGIN_USER=postgres.<project-ref>
+# DB_PLUGIN_PASSWORD=<db-password>
+# DB_PLUGIN_DATABASE=dify_plugin
+
+# plugin daemon を含めて再起動
+docker-compose up -d
+
+# 反映後に API を再起動
+docker-compose restart dify-api
+```
 
 症状:
 - ブラウザで CORS エラー表示

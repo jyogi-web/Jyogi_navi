@@ -37,6 +37,13 @@ services:
       DEPLOY_ENV: "${DEPLOY_ENV:-docker}"
 
       # =====================================
+      # Plugin daemon
+      # =====================================
+      PLUGIN_DAEMON_URL: "${PLUGIN_DAEMON_URL:-http://dify-plugin-daemon:5002}"
+      PLUGIN_DAEMON_KEY: "${PLUGIN_DAEMON_KEY:-plugin-api-key}"
+      INNER_API_KEY_FOR_PLUGIN: "${PLUGIN_DIFY_INNER_API_KEY:-inner-api-key}"
+
+      # =====================================
       # Database: Supabase (PostgreSQL)
       # =====================================
       DB_HOST: "${SUPABASE_DB_HOST}"
@@ -62,7 +69,7 @@ services:
       # =====================================
       # Vector DB: TiDB Serverless
       # =====================================
-      VECTOR_STORE: "tidb"
+      VECTOR_STORE: "tidb_vector"
       TIDB_HOST: "${TIDB_HOST}"
       TIDB_PORT: "${TIDB_PORT:-4000}"
       TIDB_USER: "${TIDB_USER}"
@@ -122,6 +129,45 @@ services:
       start_period: 40s
 
   # =====================================
+  # Dify Plugin Daemon
+  # =====================================
+  dify-plugin-daemon:
+    image: langgenius/dify-plugin-daemon:0.5.3-local
+    container_name: dify-plugin-daemon
+    restart: unless-stopped
+    environment:
+      LOG_LEVEL: "${LOG_LEVEL:-INFO}"
+      DB_TYPE: "postgresql"
+      DB_HOST: "${DB_PLUGIN_HOST}"
+      DB_PORT: "${DB_PLUGIN_PORT:-5432}"
+      DB_USERNAME: "${DB_PLUGIN_USER}"
+      DB_PASSWORD: "${DB_PLUGIN_PASSWORD}"
+      DB_DATABASE: "${DB_PLUGIN_DATABASE:-dify_plugin}"
+      REDIS_HOST: "${UPSTASH_REDIS_HOST:-dify-redis}"
+      REDIS_PORT: "${UPSTASH_REDIS_PORT:-6379}"
+      REDIS_USERNAME: "${UPSTASH_REDIS_USERNAME:-}"
+      REDIS_PASSWORD: "${UPSTASH_REDIS_PASSWORD:-${REDIS_PASSWORD:?REDIS_PASSWORD must be set for local redis}}"
+      REDIS_USE_SSL: "${UPSTASH_REDIS_USE_SSL:-false}"
+      SERVER_PORT: "${PLUGIN_DAEMON_PORT:-5002}"
+      SERVER_KEY: "${PLUGIN_DAEMON_KEY:-plugin-api-key}"
+      DIFY_INNER_API_URL: "${PLUGIN_DIFY_INNER_API_URL:-http://dify-api:5001}"
+      DIFY_INNER_API_KEY: "${PLUGIN_DIFY_INNER_API_KEY:-inner-api-key}"
+      PLUGIN_REMOTE_INSTALLING_HOST: "${PLUGIN_DEBUGGING_HOST:-0.0.0.0}"
+      PLUGIN_REMOTE_INSTALLING_PORT: "${PLUGIN_DEBUGGING_PORT:-5003}"
+      PLUGIN_WORKING_PATH: "${PLUGIN_WORKING_PATH:-/app/storage/cwd}"
+      PLUGIN_INSTALLED_PATH: "${PLUGIN_INSTALLED_PATH:-plugin}"
+      PLUGIN_PACKAGE_CACHE_PATH: "${PLUGIN_PACKAGE_CACHE_PATH:-plugin_packages}"
+      PLUGIN_MEDIA_CACHE_PATH: "${PLUGIN_MEDIA_CACHE_PATH:-assets}"
+    expose:
+      - "${PLUGIN_DAEMON_PORT:-5002}"
+    depends_on:
+      - dify-api
+    networks:
+      - dify-network
+    volumes:
+      - dify-plugin-daemon-storage:/app/storage
+
+  # =====================================
   # Redis: Upstash 経由での代替
   # キャッシュ・タスク管理用（ローカルテスト用）
   # =====================================
@@ -160,4 +206,6 @@ volumes:
   dify-logs:
     driver: local
   dify-redis-data:
+    driver: local
+  dify-plugin-daemon-storage:
     driver: local
