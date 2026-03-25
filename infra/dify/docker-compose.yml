@@ -254,7 +254,7 @@ services:
   # Dify SSRF Proxy (required by sandbox)
   # =====================================
   dify-ssrf-proxy:
-    image: ubuntu/squid:latest
+    image: ubuntu/squid:6.13-25.04_beta
     container_name: dify-ssrf-proxy
     restart: unless-stopped
     environment:
