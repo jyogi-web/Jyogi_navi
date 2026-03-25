@@ -200,6 +200,35 @@ SET GLOBAL time_zone = 'UTC';
 | `infra/dify/.env.example` | Dify（TiDB / Supabase / Gemini キー等） |
 | `infra/env/.env.example` | 共通 |
 
+### TiDB 接続設定（apps/api）
+
+[apps/api/db/session.py](apps/api/db/session.py) は以下の 5 変数から接続 URL を構築します。**すべて必須**です。
+
+| 変数 | 説明 | デフォルト |
+| --- | --- | --- |
+| `TIDB_HOST` | クラスターのホスト名 | （必須） |
+| `TIDB_PORT` | ポート番号 | `4000` |
+| `TIDB_USER` | 接続ユーザー | （必須） |
+| `TIDB_PASSWORD` | パスワード | （必須） |
+| `TIDB_DATABASE` | データベース名 | （必須） |
+
+**TLS/SSL を使用する場合（`TIDB_SSL_CA`）**
+
+`TIDB_SSL_CA` には CA 証明書の**ファイルパス**を指定します。コードは `ssl.create_default_context(cafile=<path>)` でそのパスを直接読み込みます。
+
+```dotenv
+# 例：TiDB Serverless の CA ファイルをダウンロードしてパスを指定
+TIDB_SSL_CA=/path/to/tidb-ca.pem
+```
+
+- ファイルパスに空白が含まれる場合はクォートは不要ですが、パスは絶対パスを推奨します
+- Docker コンテナで実行する場合はコンテナ内のパスを指定し、ファイルをマウントしてください
+- TiDB Serverless の CA 証明書は TiDB Cloud コンソールからダウンロードできます
+
+**Alembic マイグレーション**
+
+`apps/api/alembic.ini` の `sqlalchemy.url` はアプリの接続設定とは独立しており、`alembic` コマンド実行時のみ参照されます。マイグレーションを実行する際は `alembic.ini` の `sqlalchemy.url` も TiDB 接続文字列に更新してください。
+
 ---
 
 ## デプロイ
