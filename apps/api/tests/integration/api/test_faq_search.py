@@ -27,16 +27,16 @@ async def test_FAQ検索で正常に結果を返す(client):
     )
 
 
-async def test_クエリパラメータ未指定で422を返す(client):
+async def test_クエリパラメータ未指定で400を返す(client):
     response = await client.get("/api/faq/search")
 
-    assert response.status_code == 422
+    assert response.status_code == 400
 
 
-async def test_空文字のクエリで422を返す(client):
+async def test_空文字のクエリで400を返す(client):
     response = await client.get("/api/faq/search", params={"q": ""})
 
-    assert response.status_code == 422
+    assert response.status_code == 400
 
 
 async def test_検索結果が0件の場合に空のresultsを返す(client):
