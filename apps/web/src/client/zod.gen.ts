@@ -3,6 +3,26 @@
 import * as z from "zod";
 
 /**
+ * ChatRequest
+ *
+ * チャットリクエスト。
+ */
+export const zChatRequest = z.object({
+  session_id: z.string().min(1).max(128),
+  message: z.string().min(1).max(5000),
+});
+
+/**
+ * ChatResponse
+ *
+ * チャットレスポンス。
+ */
+export const zChatResponse = z.object({
+  answer: z.string(),
+  tokens_used: z.int(),
+});
+
+/**
  * HealthResponse
  */
 export const zHealthResponse = z.object({
@@ -62,6 +82,17 @@ export const zHealthCheckHealthGetData = z.object({
  * Successful Response
  */
 export const zHealthCheckHealthGetResponse = zHealthResponse;
+
+export const zChatApiChatPostData = z.object({
+  body: zChatRequest,
+  path: z.never().optional(),
+  query: z.never().optional(),
+});
+
+/**
+ * Successful Response
+ */
+export const zChatApiChatPostResponse = zChatResponse;
 
 export const zCreateUsageLogUsageLogsPostData = z.object({
   body: zUsageLogCreate,

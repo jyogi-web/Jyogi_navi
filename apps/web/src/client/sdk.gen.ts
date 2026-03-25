@@ -3,6 +3,9 @@
 import type { Client, Options as Options2, TDataShape } from "./client";
 import { client } from "./client.gen";
 import type {
+  ChatApiChatPostData,
+  ChatApiChatPostErrors,
+  ChatApiChatPostResponses,
   CreateUsageLogUsageLogsPostData,
   CreateUsageLogUsageLogsPostErrors,
   CreateUsageLogUsageLogsPostResponses,
@@ -38,6 +41,23 @@ export const healthCheckHealthGet = <ThrowOnError extends boolean = false>(
   (options?.client ?? client).get<HealthCheckHealthGetResponses, unknown, ThrowOnError>({
     url: "/health",
     ...options,
+  });
+
+/**
+ * Chat
+ *
+ * Dify Chat API を呼び出してLLMの回答を返すエンドポイント。
+ */
+export const chatApiChatPost = <ThrowOnError extends boolean = false>(
+  options: Options<ChatApiChatPostData, ThrowOnError>
+) =>
+  (options.client ?? client).post<ChatApiChatPostResponses, ChatApiChatPostErrors, ThrowOnError>({
+    url: "/api/chat",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
 
 /**
