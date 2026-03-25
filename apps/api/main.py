@@ -70,6 +70,7 @@ async def unhandled_error_handler(request: Request, exc: Exception) -> JSONRespo
         },
     )
 
+
 app.add_middleware(RequestIDMiddleware)
 app.add_middleware(
     CORSMiddleware,
