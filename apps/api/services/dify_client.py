@@ -19,7 +19,10 @@ class DifyResponse:
 
 async def send_chat_message(session_id: str, message: str) -> DifyResponse:
     """Dify Chat API にメッセージを送信して回答を返す。"""
-    url = f"{settings.dify_api_base_url}/v1/chat-messages"
+    base = settings.dify_api_base_url.rstrip("/")
+    url = (
+        f"{base}/chat-messages" if base.endswith("/v1") else f"{base}/v1/chat-messages"
+    )
     headers = {
         "Authorization": f"Bearer {settings.dify_api_key.get_secret_value()}",
         "Content-Type": "application/json",
