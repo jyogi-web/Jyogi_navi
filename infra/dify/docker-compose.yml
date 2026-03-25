@@ -121,7 +121,7 @@ services:
       <<: *dify-shared-env
       MODE: "api"
       DIFY_API_SECRET_KEY: "${DIFY_API_SECRET_KEY}"
-      PLUGIN_REMOTE_INSTALL_HOST: "${EXPOSE_PLUGIN_DEBUGGING_HOST:-host.docker.internal}"
+      PLUGIN_REMOTE_INSTALL_HOST: "${EXPOSE_PLUGIN_DEBUGGING_HOST:-}"
       PLUGIN_REMOTE_INSTALL_PORT: "${EXPOSE_PLUGIN_DEBUGGING_PORT:-5003}"
 
     networks:
@@ -214,7 +214,7 @@ services:
     expose:
       - "${PLUGIN_DAEMON_PORT:-5002}"
     ports:
-      - "${EXPOSE_PLUGIN_DEBUGGING_PORT:-5003}:${PLUGIN_DEBUGGING_PORT:-5003}"
+      - "127.0.0.1:${EXPOSE_PLUGIN_DEBUGGING_PORT:-5003}:${PLUGIN_DEBUGGING_PORT:-5003}"
     depends_on:
       dify-api:
         condition: service_healthy
@@ -222,7 +222,8 @@ services:
       - dify-network
     volumes:
       - dify-plugin-daemon-storage:/app/storage
-      - /var/run/docker.sock:/var/run/docker.sock
+      # Security-first default: docker.sock is not mounted.
+      # Enable via override file only when remote install debugging is required.
 
   # =====================================
   # Dify Sandbox (code execution)

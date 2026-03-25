@@ -19,8 +19,8 @@
 
 - Docker & Docker Compose インストール済み
   - `docker --version` と `docker-compose --version` で確認
-- Docker Desktop / Docker Engine が起動しており、`/var/run/docker.sock` が利用可能
-  - plugin runtime の起動に必要（Model Provider の資格情報検証で使用）
+- Docker Desktop / Docker Engine が起動していること
+- （任意）`/var/run/docker.sock` を使う plugin remote install デバッグは明示的に有効化した場合のみ利用
 - **外部サービスアカウント作成済み:**
   - ✅ Supabase プロジェクト（PostgreSQL DB）
   - ✅ TiDB Serverless クラスター（Vector DB）
@@ -90,6 +90,7 @@ DIFY_WEB_PORT=3101
 # 永続ストレージ参照先（コンテナ内）
 # 実データは named volume(dify-storage) に保持
 STORAGE_LOCAL_PATH=/app/storage
+OPENDAL_FS_ROOT=/app/storage
 
 # ローカルUIから API(5001) を叩くための CORS 許可
 CORS_ORIGINS=http://127.0.0.1:3101
@@ -370,7 +371,7 @@ docker-compose restart dify-api
 docker-compose exec dify-api sh -lc 'echo "$STORAGE_LOCAL_PATH"'
 
 # 対象 tenant の鍵ファイル有無を確認
-docker-compose exec dify-api sh -lc 'ls -l /app/storage/privkeys/<tenant-id>/private.pem'
+docker-compose exec dify-api sh -lc 'ls -l "${STORAGE_LOCAL_PATH}/privkeys/<tenant-id>/private.pem"'
 ```
 
 解決方法（コンテナ内で再生成。ローカルに手置きしない）:
@@ -378,10 +379,12 @@ docker-compose exec dify-api sh -lc 'ls -l /app/storage/privkeys/<tenant-id>/pri
 # <tenant-id> を実際の tenant UUID に置き換える
 docker-compose exec -u 0 dify-api sh -lc '
 tenant_id="<tenant-id>";
-key_path="/app/storage/privkeys/${tenant_id}/private.pem";
+[ -n "${STORAGE_LOCAL_PATH}" ] || { echo "STORAGE_LOCAL_PATH is empty"; exit 1; };
+storage_path="${STORAGE_LOCAL_PATH}";
+key_path="${storage_path}/privkeys/${tenant_id}/private.pem";
 mkdir -p "$(dirname "$key_path")";
 [ -f "$key_path" ] || openssl genrsa -out "$key_path" 2048;
-chown -R 1001:1001 "/app/storage/privkeys/${tenant_id}";
+chown -R 1001:1001 "${storage_path}/privkeys/${tenant_id}";
 chmod 600 "$key_path"'
 
 # API/Worker を再起動
