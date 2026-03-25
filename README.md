@@ -174,6 +174,20 @@ docker compose up -d
 
 > Cloudflare Tunnel を使って外部公開する場合は `cloudflared` を別途設定してください。
 
+### TiDB Serverless タイムゾーン設定（初回必須）
+
+> **警告**：TiDB Serverless のデフォルトタイムゾーンは `SYSTEM`（地域依存）です。設定が UTC でない場合、`usage_logs` の日次集計やレート制御の日次境界がずれます（[docs/07_infrastructure.md](docs/07_infrastructure.md) 参照）。
+
+クラスター作成後・初回デプロイ前に、十分な権限を持つユーザーで以下を **必ず** 実行してください。
+
+```sql
+SET GLOBAL time_zone = 'UTC';
+```
+
+- TiDB Serverless コンソール（SQL Editor）またはクライアントツールから実行します
+- `SET GLOBAL` は管理者権限が必要です。一般ユーザーでは反映されません
+- 設定はクラスター再起動後も永続されます（TiDB Serverless の仕様に従い保持）
+
 ---
 
 ## 環境変数
