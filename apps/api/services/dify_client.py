@@ -57,6 +57,10 @@ async def send_chat_message(session_id: str, message: str) -> DifyResponse:
         ) from exc
 
     answer = data.get("answer", "")
+    if not isinstance(answer, str):
+        raise HTTPException(
+            status_code=502, detail="upstream returned invalid answer type"
+        )
     raw_tokens = data.get("metadata", {}).get("usage", {}).get("total_tokens", 0)
     try:
         tokens_used = max(0, int(raw_tokens))
