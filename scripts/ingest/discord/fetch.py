@@ -115,7 +115,11 @@ def fetch_channel(
 
         reached_limit = False
         for msg in batch:
-            if msg["id"] <= after_snowflake:
+            try:
+                msg_id = int(msg["id"])
+            except (KeyError, ValueError, TypeError):
+                continue
+            if msg_id <= int(after_snowflake):
                 reached_limit = True
                 break
 
