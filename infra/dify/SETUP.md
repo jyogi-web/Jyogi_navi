@@ -70,7 +70,7 @@ TIDB_PASSWORD=your-password
 TIDB_DATABASE=dify
 
 # Upstash Redis
-UPSTASH_REDIS_URL=redis://:password@host:6379
+UPSTASH_REDIS_URL=rediss://default:password@host:6379
 
 # ローカルRedisを使う場合（UPSTASH_REDIS_URLを空のままにする）
 REDIS_PASSWORD=set-a-strong-random-secret
@@ -81,6 +81,12 @@ GOOGLE_API_KEY=AIzaSy...
 # Secret keys（生成: python3 -c "import secrets; print(secrets.token_hex(32))"）
 SECRET_KEY=your-random-string
 DIFY_API_SECRET_KEY=your-api-secret-string
+
+# Dify Web ポート（競合時は変更可）
+DIFY_WEB_PORT=3101
+
+# ローカルUIから API(5001) を叩くための CORS 許可
+CORS_ORIGINS=http://127.0.0.1:3101
 ```
 
 ### ステップ 3: Secret Keys を生成（一度だけ）
@@ -112,8 +118,8 @@ docker-compose config > /dev/null && echo "✅ OK"
 ```bash
 cd infra/dify
 
-# ローカルRedisを使う場合（profile: local）
-docker-compose --profile local up -d
+# ローカルRedisを使う場合（UPSTASH_REDIS_URL を未設定にする）
+docker-compose up -d
 
 # Upstash Redisを使う場合（UPSTASH_REDIS_URLを設定して起動）
 docker-compose up -d
@@ -135,7 +141,8 @@ docker-compose ps
 # 出力例:
 # NAME                COMMAND                STATUS              PORTS
 # dify-api            "python  -m dify...."  Up 2 minutes        0.0.0.0:5001->5001/tcp
-# dify-web            "npm run start"        Up 2 minutes        0.0.0.0:3001->3000/tcp
+# dify-web            "npm run start"        Up 2 minutes        0.0.0.0:3101->3000/tcp
+# dify-plugin-daemon  "./main"               Up 2 minutes        5002/tcp
 # dify-redis          "redis-server..."      Up 2 minutes        0.0.0.0:6379->6379/tcp
 ```
 
@@ -143,8 +150,12 @@ docker-compose ps
 
 ブラウザで開く:
 ```text
-http://localhost:3001
+http://127.0.0.1:3101
 ```
+
+重要:
+- `localhost` と `127.0.0.1` を混在させないでください（ログイン後に `apps` から `signin` へ戻る原因になります）。
+- API/APP は両方とも `127.0.0.1` に統一してください。
 
 初回アクセス時:
 1. **セットアップウィザードが表示される**
@@ -245,6 +256,71 @@ nano .env
 # → UPSTASH_REDIS_URL に正しい URL を設定
 ```
 
+### 🔴 「CORSエラーに見えるが実際はログイン500になる」
+
+症状:
+- ブラウザで CORS エラー表示
+- 同時に `/console/api/login` が 500
+
+原因:
+- `dify-api` が Supabase に接続できず、認証処理が内部エラー化している
+- `.env` の `SUPABASE_DB_HOST` などがプレースホルダのまま
+
+確認方法:
+```bash
+docker-compose logs --tail=150 dify-api
+```
+
+以下のようなエラーが出る場合は DB 接続設定が未完了:
+```text
+psycopg2.OperationalError: could not translate host name "db.xxxxxxxxxxxxx.supabase.co"
+```
+
+解決方法:
+```bash
+# 1) .env の Supabase 接続情報を実値に更新
+nano .env
+
+# 2) API を再起動
+docker-compose up -d dify-api
+
+# 3) ブラウザをハードリロード
+```
+
+### 🔴 「Failed to request plugin daemon / ConnectError [Errno 111]」
+
+症状: `dify-api` ログに `Failed to request plugin daemon` が大量に出る
+
+原因:
+- `dify-plugin-daemon` が未起動
+- `PLUGIN_DAEMON_URL` と `PLUGIN_DAEMON_KEY` が不一致
+- plugin-daemon の DB が Supabase transaction pooler(6543) へ接続され、`prepared statement already exists (42P05)` でクラッシュ
+
+チェック:
+```bash
+docker-compose ps
+docker-compose logs -f dify-plugin-daemon
+docker-compose exec dify-api sh -lc 'echo "$PLUGIN_DAEMON_URL"; echo "$PLUGIN_DAEMON_KEY"'
+docker-compose exec dify-plugin-daemon sh -lc 'echo "$DB_HOST:$DB_PORT/$DB_DATABASE"'
+```
+
+解決方法:
+```bash
+# plugin-daemon は DB を専用設定にする（既定 5432）
+# .env 例:
+# DB_PLUGIN_HOST=aws-1-ap-southeast-1.pooler.supabase.com
+# DB_PLUGIN_PORT=5432
+# DB_PLUGIN_USER=postgres.<project-ref>
+# DB_PLUGIN_PASSWORD=<db-password>
+# DB_PLUGIN_DATABASE=dify_plugin
+
+# plugin daemon を含めて再起動
+docker-compose up -d
+
+# 反映後に API を再起動
+docker-compose restart dify-api
+```
+
 ### 🔴 「Gemini API キーが無効」
 
 症状: LLM 回答生成で 「Invalid API key」
@@ -263,14 +339,14 @@ cat .env | grep GOOGLE_API_KEY
 # 4. Dify UI > Model Provider > Google で キーを再設定
 ```
 
-### 🔴 「ポート 3001 または 5001 が既に使用中」
+### 🔴 「ポート 3101 または 5001 が既に使用中」
 
-症状: `Error: listen EADDRINUSE :::3001`
+症状: `Error: listen EADDRINUSE :::3101`
 
 解決方法:
 ```bash
 # 既存プロセスを確認（Linux/Mac）
-lsof -i :3001
+lsof -i :3101
 lsof -i :5001
 
 # プロセス終了
@@ -278,7 +354,8 @@ kill -9 <PID>
 
 # または docker-compose.yml でポート番号を変更
 nano docker-compose.yml
-# dify-web: ports: ["3001:3000"]  ← 3001 に変更
+# dify-web: ports: ["${DIFY_WEB_PORT:-3101}:3000"]
+# .env の DIFY_WEB_PORT=3201 などに変更して再起動
 ```
 
 ### 🔴 「メモリ不足 (Out of Memory)」
@@ -473,7 +550,7 @@ ingress:
   - hostname: dify.yourdomain.com
     service: http://localhost:5001
   - hostname: yourdomain.com
-    service: http://localhost:3001
+    service: http://localhost:3101
   - service: http_status:404
 ```
 

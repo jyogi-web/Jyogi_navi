@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { v4 as uuidv4 } from "uuid";
 import { Message } from "@/types/chat";
 import { ChatMessage } from "./ChatMessage";
@@ -9,9 +10,14 @@ import { ChatHeader } from "./ChatHeader";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
 
+async function sendChatMessage(content: string): Promise<string> {
+  // TODO: Dify API呼び出しに置き換える
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+  return `ご質問ありがとうございます！「${content}」についてですね。\n\nこちらは開発中のダミーレスポンスです。実際のDify APIを統合すると、じょぎに関する詳しい情報をお答えできます。\n\n気軽に他の質問もしてくださいね！`;
+}
+
 export function ChatContainer() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // 新しいメッセージが追加されたら自動スクロール
@@ -19,9 +25,31 @@ export function ChatContainer() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = async (content: string) => {
+  const { mutate, isPending } = useMutation({
+    mutationFn: sendChatMessage,
+    onSuccess: (responseContent) => {
+      const assistantMessage: Message = {
+        id: uuidv4(),
+        role: "assistant",
+        content: responseContent,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+    },
+    onError: () => {
+      const errorMessage: Message = {
+        id: uuidv4(),
+        role: "assistant",
+        content: "申し訳ございません。エラーが発生しました。もう一度お試しください。",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    },
+  });
+
+  const handleSendMessage = (content: string) => {
     // 送信中の場合は再入を防ぐ
-    if (isLoading) {
+    if (isPending) {
       return;
     }
 
@@ -40,34 +68,7 @@ export function ChatContainer() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    setIsLoading(true);
-
-    try {
-      // TODO: 実際のDify API呼び出しに置き換える
-      // 現在はダミーレスポンス
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      const assistantMessage: Message = {
-        id: uuidv4(),
-        role: "assistant",
-        content: `ご質問ありがとうございます！「${trimmed}」についてですね。\n\nこちらは開発中のダミーレスポンスです。実際のDify APIを統合すると、じょぎに関する詳しい情報をお答えできます。\n\n気軽に他の質問もしてくださいね！`,
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error("Error sending message:", error);
-      // エラーメッセージを表示
-      const errorMessage: Message = {
-        id: uuidv4(),
-        role: "assistant",
-        content: "申し訳ございません。エラーが発生しました。もう一度お試しください。",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
+    mutate(trimmed);
   };
 
   return (
@@ -103,7 +104,7 @@ export function ChatContainer() {
                     <button
                       key={index}
                       onClick={() => handleSendMessage(example.replace(/^[^\s]+ /, ""))}
-                      disabled={isLoading}
+                      disabled={isPending}
                       className="rounded-xl border border-gray-200 bg-white p-3 text-left text-sm transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
                     >
                       {example}
@@ -117,7 +118,7 @@ export function ChatContainer() {
                 {messages.map((message) => (
                   <ChatMessage key={message.id} message={message} />
                 ))}
-                {isLoading && (
+                {isPending && (
                   <div className="mb-4 flex items-center gap-3" role="status">
                     <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-600 text-lg">
                       🐰
@@ -138,7 +139,7 @@ export function ChatContainer() {
       {/* 入力エリア */}
       <div className="border-t border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/80">
         <div className="mx-auto max-w-4xl px-4 py-4">
-          <ChatInput onSend={handleSendMessage} isLoading={isLoading} />
+          <ChatInput onSend={handleSendMessage} isLoading={isPending} />
         </div>
       </div>
     </div>
