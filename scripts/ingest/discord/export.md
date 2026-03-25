@@ -51,7 +51,7 @@ scripts/ingest/discord/
 
 ```bash
 cd scripts/ingest/discord
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 
 export DISCORD_BOT_TOKEN="your_bot_token"
 export DISCORD_CHANNEL_IDS="1215894284428120170,1215901602456539146"
@@ -59,7 +59,7 @@ export DIFY_API_URL="https://your-dify-url"
 export DIFY_API_KEY="your_dify_api_key"
 export DIFY_DATASET_ID="your_dataset_id"
 
-python run.py
+uv run run.py
 ```
 
 ## GitHub Actions による定期実行
