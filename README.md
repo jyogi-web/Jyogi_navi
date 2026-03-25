@@ -69,44 +69,49 @@ flowchart LR
 
 ### フロントエンド
 
-| 項目 | 技術 |
-| --- | --- |
-| 言語 | TypeScript |
-| フレームワーク | Next.js (App Router / OpenNext) |
-| UI | shadcn/ui + Tailwind CSS |
-| 状態管理 | TanStack Query |
-| フォーム | React Hook Form + Zod |
-| テスト | Vitest |
-| ホスティング | Cloudflare Pages |
+| 項目 | 技術 | 採用理由 | 評価観点 |
+| --- | --- | --- | --- |
+| 言語 | TypeScript | Discord API など複雑なレスポンスを型安全に扱える | 型安全性・保守性 |
+| フレームワーク | Next.js (App Router / OpenNext) | SSR/ISR による高速化と API Routes による軽量バックエンド処理の完結 | パフォーマンス・エコシステム |
+| UI | shadcn/ui + Tailwind CSS | コピー&ペーストで導入可能・カスタマイズ性が高くライブラリ肥大化を防げる | 開発速度・デザイン一貫性 |
+| 状態管理 | TanStack Query | RAG API からのデータ取得・キャッシュ・ローディング状態管理に最適 | スケール耐性・Server State 分離 |
+| フォーム | React Hook Form + Zod | Zod によるスキーマ定義で入力バリデーションを型安全に実装 | パフォーマンス・バリデーション |
+| テスト | Vitest | Jest より高速で Next.js との親和性が高い | カバレッジ・実行速度 |
+| ホスティング | Cloudflare Pages | CDN・Edge SSR・DDoS 防御が無料枠で利用可能 | コスト・パフォーマンス |
 
 ### バックエンド API
 
-| 項目 | 技術 |
-| --- | --- |
-| 言語 | Python |
-| フレームワーク | FastAPI |
-| バリデーション | Pydantic |
-| ホスティング | Google Cloud Run |
+| 項目 | 技術 | 採用理由 | 評価観点 |
+| --- | --- | --- | --- |
+| 言語 | Python | RAG エコシステム・Dify との整合性。Pydantic で型安全性を確保 | 生産性・保守性 |
+| フレームワーク | FastAPI | 高速・自動ドキュメント生成。単一コンテナで動作し Cloud Run と相性が良い | 構造化・拡張性 |
+| バリデーション | Pydantic | スキーマ定義による入力検証と型安全な設定管理 | 型安全性・保守性 |
+| 非同期処理 | Cloud Tasks | 取り込みジョブ等の非同期実行。再試行・耐障害性を確保 | 再試行・耐障害性 |
+| ホスティング | Google Cloud Run | Scale to Zero 対応。月 200 万リクエストまで無料 | コスト・可用性 |
+
+> **無料枠前提**：Cloud Run は月 200 万リクエスト・180,000 vCPU 秒まで無料。通常期（MAU ～50）は無料枠内で収まる。勧誘期（4 月）は最小インスタンス数を一時的に 1 に設定してコールドスタートを防止する。
 
 ### RAG
 
-| 項目 | 技術 |
-| --- | --- |
-| オーケストレーション | Dify（セルフホスト / Docker） |
-| ベクトル DB | TiDB Serverless |
-| Embedding / LLM | Gemini |
-| 公開 | Cloudflare Tunnel |
+| 項目 | 技術 | 採用理由 | 評価観点 |
+| --- | --- | --- | --- |
+| オーケストレーション | Dify（セルフホスト / Docker） | RAG パイプライン（分割・Embedding・検索）を GUI で完結でき、Chat API 公開も容易 | 開発効率・運用性 |
+| ベクトル DB | TiDB Serverless | 12 GB まで無料。ベクトル検索と全文検索のハイブリッドに対応 | 検索精度・コスト |
+| Embedding / LLM | Gemini | 日本語セマンティック検索で高精度。無料枠・少額課金で対応可能 | 検索精度・コスト |
+| 公開 | Cloudflare Tunnel | ポート開放・固定 IP 不要で自宅 PC を HTTPS 公開 | セキュリティ・可用性 |
+
+> **無料枠前提**：TiDB Serverless は 12 GB まで無料。Gemini は無料枠および少額課金で運用。Dify は自宅 PC で動作させるためホスティングコスト 0 円。
 
 ### インフラ / DevOps
 
-| 項目 | 技術 |
-| --- | --- |
-| DB（Dify 内部） | Supabase PostgreSQL |
-| キャッシュ | Upstash Redis |
-| CI/CD（FE・API） | GitHub Actions (cloud-hosted) |
-| CI/CD（Dify） | GitHub Actions (self-hosted runner) |
-| 監視 | Sentry |
-| ログ管理 | Cloud Logging |
+| 項目 | 技術 | 採用理由 | 評価観点 |
+| --- | --- | --- | --- |
+| DB（Dify 内部） | Supabase PostgreSQL | Dify 推奨の内部 DB。MySQL 系でエラー事例あり。500 MB まで無料 | 安定性・コスト |
+| キャッシュ | Upstash Redis | Dify のタスクキュー・レート制限カウンタ用。1 日 1 万リクエストまで無料 | レイテンシ・コスト |
+| CI/CD（FE・API） | GitHub Actions (cloud-hosted) | Cloudflare Pages・Cloud Run への自動デプロイ | 自動化・安定性 |
+| CI/CD（Dify） | GitHub Actions (self-hosted runner) | 自宅 PC 上で docker-compose pull & up を自動実行 | 自動化 |
+| 監視 | Sentry | エラー検知・アラート | 可観測性 |
+| ログ管理 | Cloud Logging | Cloud Run（FastAPI）のログを Google Cloud 標準機能で管理 | トレーサビリティ |
 
 ---
 
