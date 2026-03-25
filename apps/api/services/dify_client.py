@@ -17,7 +17,9 @@ class DifyResponse:
     tokens_used: int
 
 
-async def send_chat_message(session_id: str, message: str) -> DifyResponse:
+async def send_chat_message(
+    session_id: str, message: str, trace_id: str = ""
+) -> DifyResponse:
     """Dify Chat API にメッセージを送信して回答を返す。"""
     base_url = settings.dify_api_base_url.strip()
     api_key = settings.dify_api_key.get_secret_value().strip()
@@ -32,6 +34,8 @@ async def send_chat_message(session_id: str, message: str) -> DifyResponse:
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
+    if trace_id:
+        headers["X-Request-ID"] = trace_id
     payload = {
         "inputs": {},
         "query": message,
@@ -57,12 +61,22 @@ async def send_chat_message(session_id: str, message: str) -> DifyResponse:
             status_code=502, detail="upstream returned invalid response"
         ) from exc
 
+    if not isinstance(data, dict):
+        raise HTTPException(
+            status_code=502, detail="upstream returned invalid response"
+        )
     answer = data.get("answer", "")
     if not isinstance(answer, str):
         raise HTTPException(
             status_code=502, detail="upstream returned invalid answer type"
         )
-    raw_tokens = data.get("metadata", {}).get("usage", {}).get("total_tokens", 0)
+    metadata = data.get("metadata", {})
+    if not isinstance(metadata, dict):
+        metadata = {}
+    usage = metadata.get("usage", {})
+    if not isinstance(usage, dict):
+        usage = {}
+    raw_tokens = usage.get("total_tokens", 0)
     try:
         tokens_used = max(0, int(raw_tokens))
     except (TypeError, ValueError) as exc:

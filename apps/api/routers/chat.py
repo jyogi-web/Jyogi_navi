@@ -24,7 +24,7 @@ async def chat(
         raise HTTPException(status_code=429, detail="Rate limit exceeded")
 
     masked_message = mask(body.message)
-    dify_response = await send_chat_message(body.session_id, masked_message)
+    dify_response = await send_chat_message(body.session_id, masked_message, trace_id)
     masked_answer = mask(dify_response.answer)
 
     await save_usage_log(

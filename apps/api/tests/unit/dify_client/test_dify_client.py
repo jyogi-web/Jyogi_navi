@@ -90,3 +90,65 @@ async def test_接続失敗時は502エラー(mock_settings):
             await send_chat_message("session-1", "test")
 
     assert exc_info.value.status_code == 502
+
+
+async def test_trace_idがヘッダに付与される(mock_settings):
+    mock_response = MagicMock()
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json.return_value = {
+        "answer": "回答",
+        "metadata": {"usage": {"total_tokens": 10}},
+    }
+
+    with patch("services.dify_client.httpx.AsyncClient") as mock_client_cls:
+        mock_client = AsyncMock()
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client.post = AsyncMock(return_value=mock_response)
+        mock_client_cls.return_value = mock_client
+
+        await send_chat_message("session-1", "test", trace_id="trace-abc")
+
+        _, kwargs = mock_client.post.call_args
+        assert kwargs["headers"]["X-Request-ID"] == "trace-abc"
+
+
+async def test_trace_idが空の場合ヘッダに付与されない(mock_settings):
+    mock_response = MagicMock()
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json.return_value = {
+        "answer": "回答",
+        "metadata": {"usage": {"total_tokens": 10}},
+    }
+
+    with patch("services.dify_client.httpx.AsyncClient") as mock_client_cls:
+        mock_client = AsyncMock()
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client.post = AsyncMock(return_value=mock_response)
+        mock_client_cls.return_value = mock_client
+
+        await send_chat_message("session-1", "test")
+
+        _, kwargs = mock_client.post.call_args
+        assert "X-Request-ID" not in kwargs["headers"]
+
+
+async def test_レスポンスがdictでない場合は502エラー(mock_settings):
+    from fastapi import HTTPException
+
+    mock_response = MagicMock()
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json.return_value = ["unexpected", "list"]
+
+    with patch("services.dify_client.httpx.AsyncClient") as mock_client_cls:
+        mock_client = AsyncMock()
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client.post = AsyncMock(return_value=mock_response)
+        mock_client_cls.return_value = mock_client
+
+        with pytest.raises(HTTPException) as exc_info:
+            await send_chat_message("session-1", "test")
+
+    assert exc_info.value.status_code == 502
