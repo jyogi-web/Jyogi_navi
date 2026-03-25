@@ -26,19 +26,41 @@
 
 ## システム構成
 
-```
-新入生
-  └── Cloudflare Pages（Next.js）
-        ├── Backend API（Cloud Run / FastAPI）
-        │     ├── PII マスキング
-        │     ├── レート制限
-        │     └── TiDB Serverless（ログ・評価）
-        └── Dify（自宅 PC / Docker）
-              ├── RAG パイプライン（分割・Embedding・検索）
-              ├── TiDB Serverless（ベクトル DB）
-              ├── Supabase PostgreSQL（Dify 内部 DB）
-              ├── Upstash Redis（タスクキュー）
-              └── Gemini API（Embedding・LLM）
+```mermaid
+flowchart LR
+    User["新入生"]
+
+    subgraph EDGE["Edge Layer (Cloudflare)"]
+        FE["Cloudflare Pages\n(Next.js)"]
+    end
+
+    subgraph CLOUD["Google Cloud Run"]
+        API["Backend API\n(FastAPI)"]
+        PII["PII マスキング"]
+        RATE["レート制限"]
+        TIDB_LOG["TiDB Serverless\n(ログ・評価)"]
+    end
+
+    subgraph HOME["自宅 PC (Docker)"]
+        DIFY["Dify\n(RAG Orchestrator)"]
+        RAG["RAG パイプライン\n(分割・Embedding・検索)"]
+        TIDB_VEC["TiDB Serverless\n(ベクトル DB)"]
+        SUPA["Supabase PostgreSQL\n(Dify 内部 DB)"]
+        REDIS["Upstash Redis\n(タスクキュー)"]
+        GEMINI["Gemini API\n(Embedding・LLM)"]
+    end
+
+    User --> FE
+    FE --> API
+    FE --> DIFY
+    API --> PII
+    API --> RATE
+    API --> TIDB_LOG
+    DIFY --> RAG
+    DIFY --> TIDB_VEC
+    DIFY --> SUPA
+    DIFY --> REDIS
+    DIFY --> GEMINI
 ```
 
 ---
