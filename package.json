@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "prepare": "test -n \"$CI\" || lefthook install",
+    "prepare": "test -n \"$CI\" || lefthook install --reset-hooks-path",
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
@@ -18,7 +18,8 @@
     "test:web": "turbo run test --filter=web",
     "test:api": "turbo run test --filter=api",
     "lint:web": "turbo run lint --filter=web",
-    "lint:api": "turbo run lint --filter=api"
+    "lint:api": "turbo run lint --filter=api",
+    "openapi": "turbo run openapi:generate"
   },
   "devDependencies": {
     "concurrently": "^9.0.0",
