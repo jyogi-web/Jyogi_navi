@@ -19,11 +19,12 @@ class DifyResponse:
 
 async def send_chat_message(session_id: str, message: str) -> DifyResponse:
     """Dify Chat API にメッセージを送信して回答を返す。"""
+    base_url = settings.dify_api_base_url.strip()
     api_key = settings.dify_api_key.get_secret_value().strip()
-    if not settings.dify_api_base_url.strip() or not api_key:
+    if not base_url or not api_key:
         raise HTTPException(status_code=500, detail="Dify API configuration missing")
 
-    base = settings.dify_api_base_url.rstrip("/")
+    base = base_url.rstrip("/")
     url = (
         f"{base}/chat-messages" if base.endswith("/v1") else f"{base}/v1/chat-messages"
     )
