@@ -3,8 +3,16 @@
 import { type DefaultError, queryOptions, type UseMutationOptions } from "@tanstack/react-query";
 
 import { client } from "../client.gen";
-import { createUsageLogUsageLogsPost, healthCheckHealthGet, type Options } from "../sdk.gen";
+import {
+  chatChatPost,
+  createUsageLogUsageLogsPost,
+  healthCheckHealthGet,
+  type Options,
+} from "../sdk.gen";
 import type {
+  ChatChatPostData,
+  ChatChatPostError,
+  ChatChatPostResponse,
   CreateUsageLogUsageLogsPostData,
   CreateUsageLogUsageLogsPostError,
   CreateUsageLogUsageLogsPostResponse,
@@ -77,6 +85,31 @@ export const healthCheckHealthGetOptions = (options?: Options<HealthCheckHealthG
     },
     queryKey: healthCheckHealthGetQueryKey(options),
   });
+
+/**
+ * Chat
+ *
+ * Dify Chat API を呼び出してLLMの回答を返すエンドポイント。
+ */
+export const chatChatPostMutation = (
+  options?: Partial<Options<ChatChatPostData>>
+): UseMutationOptions<ChatChatPostResponse, ChatChatPostError, Options<ChatChatPostData>> => {
+  const mutationOptions: UseMutationOptions<
+    ChatChatPostResponse,
+    ChatChatPostError,
+    Options<ChatChatPostData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await chatChatPost({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 /**
  * Create Usage Log

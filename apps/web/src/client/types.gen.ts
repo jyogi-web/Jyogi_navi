@@ -5,6 +5,38 @@ export type ClientOptions = {
 };
 
 /**
+ * ChatRequest
+ *
+ * チャットリクエスト。
+ */
+export type ChatRequest = {
+  /**
+   * Session Id
+   */
+  session_id: string;
+  /**
+   * Message
+   */
+  message: string;
+};
+
+/**
+ * ChatResponse
+ *
+ * チャットレスポンス。
+ */
+export type ChatResponse = {
+  /**
+   * Answer
+   */
+  answer: string;
+  /**
+   * Tokens Used
+   */
+  tokens_used: number;
+};
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -120,6 +152,31 @@ export type HealthCheckHealthGetResponses = {
 
 export type HealthCheckHealthGetResponse =
   HealthCheckHealthGetResponses[keyof HealthCheckHealthGetResponses];
+
+export type ChatChatPostData = {
+  body: ChatRequest;
+  path?: never;
+  query?: never;
+  url: "/chat";
+};
+
+export type ChatChatPostErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type ChatChatPostError = ChatChatPostErrors[keyof ChatChatPostErrors];
+
+export type ChatChatPostResponses = {
+  /**
+   * Successful Response
+   */
+  200: ChatResponse;
+};
+
+export type ChatChatPostResponse = ChatChatPostResponses[keyof ChatChatPostResponses];
 
 export type CreateUsageLogUsageLogsPostData = {
   body: UsageLogCreate;
