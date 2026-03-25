@@ -73,7 +73,7 @@ def main() -> None:
             print(f"  正規化後: {len(filtered)} 件")
 
             if not filtered:
-                print(f"  スキップ: メッセージが0件のためアップロードしません")
+                print("  スキップ: メッセージが0件のためアップロードしません")
                 continue
 
             # 3. Dify にアップロード（ドキュメント名: "discord-{チャンネル名}"）
