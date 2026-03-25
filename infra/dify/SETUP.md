@@ -1,6 +1,6 @@
 # 🐳 Dify セットアップ & 運用ガイド
 
-**最終更新日:** 2026年3月6日  
+**最終更新日:** 2026年3月26日  
 **対象フェーズ:** Sprint 0 (MVP基盤構築)
 
 ---
@@ -353,6 +353,44 @@ docker-compose up -d
 # 反映後に API を再起動
 docker-compose restart dify-api
 ```
+
+### 🔴 「PrivkeyNotFoundError / private.pem not found（Model Provider 保存時に 500）」
+
+症状:
+- Dify UI の Model Provider 保存時に 500
+- `dify-api` ログに `PrivkeyNotFoundError` や `private.pem not found`
+
+ポイント:
+- 初回セットアップ直後は通常この作業は不要です（Dify が鍵を作成）。
+- ただし、`docker-compose down -v` 実行やストレージ破損で鍵が消えると再発します。
+
+チェック:
+```bash
+# コンテナ内のストレージ参照先を確認
+docker-compose exec dify-api sh -lc 'echo "$STORAGE_LOCAL_PATH"'
+
+# 対象 tenant の鍵ファイル有無を確認
+docker-compose exec dify-api sh -lc 'ls -l /app/storage/privkeys/<tenant-id>/private.pem'
+```
+
+解決方法（コンテナ内で再生成。ローカルに手置きしない）:
+```bash
+# <tenant-id> を実際の tenant UUID に置き換える
+docker-compose exec -u 0 dify-api sh -lc '
+tenant_id="<tenant-id>";
+key_path="/app/storage/privkeys/${tenant_id}/private.pem";
+mkdir -p "$(dirname "$key_path")";
+[ -f "$key_path" ] || openssl genrsa -out "$key_path" 2048;
+chown -R 1001:1001 "/app/storage/privkeys/${tenant_id}";
+chmod 600 "$key_path"'
+
+# API/Worker を再起動
+docker-compose restart dify-api dify-worker dify-worker-beat
+```
+
+注意:
+- 再生成した鍵は「鍵が無い」エラーを解消しますが、過去の鍵で暗号化済みだった provider credentials は復号できません。
+- その場合は Dify UI で Model Provider の API キーを再入力して保存してください。
 
 ### 🔴 「Gemini API キーが無効」
 
