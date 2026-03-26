@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from middleware.request_id import RequestIDMiddleware
-from routers import chat, consent, feedback, health, usage_logs
+from routers import admin, chat, consent, feedback, health, usage_logs
 
 app = FastAPI(title="Jyogi Navi API", version="0.1.0")
 
@@ -20,3 +20,4 @@ app.include_router(chat.router)
 app.include_router(consent.router)
 app.include_router(feedback.router)
 app.include_router(usage_logs.router)
+app.include_router(admin.router)

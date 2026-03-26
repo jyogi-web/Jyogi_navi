@@ -39,3 +39,7 @@ scripts/ingest/notion/tests/out/
 
 # Node.js
 node_modules/
+
+# Next.js
+.next/
+out/
