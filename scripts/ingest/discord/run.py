@@ -20,7 +20,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 
 from fetch import fetch_channel
-from normalize import format_for_dify, is_bot_message, is_stamp_only
+from normalize import format_for_dify, is_bot_message, is_stamp_only, to_faq_records
 from upload_dify import upload_document
 
 
@@ -30,6 +30,12 @@ def _require_env(name: str) -> str:
         print(f"ERROR: 環境変数 {name} が設定されていません", file=sys.stderr)
         sys.exit(1)
     return value
+
+
+def _tidb_enabled() -> bool:
+    """TiDB 接続に必要な環境変数がすべて設定されているか確認する。"""
+    required = ["TIDB_HOST", "TIDB_USER", "TIDB_PASSWORD", "TIDB_DATABASE"]
+    return all(os.environ.get(k, "").strip() for k in required)
 
 
 def _normalize_messages(messages: list[dict]) -> list[dict]:
@@ -57,6 +63,11 @@ def main() -> None:
     print(f"対象チャンネル数: {len(channel_ids)}")
     print(f"取得期間: {after_dt.date()} 以降\n")
 
+    tidb_available = _tidb_enabled()
+    if not tidb_available:
+        print("WARN: TiDB 環境変数が未設定のため TiDB への保存をスキップします\n",
+              file=sys.stderr)
+
     success_count = 0
     error_channels: list[str] = []
 
@@ -79,6 +90,13 @@ def main() -> None:
             # 3. Dify にアップロード（ドキュメント名: "discord-{チャンネル名}"）
             doc_name = f"discord-{channel_name}"
             upload_document(dify_api_url, dify_api_key, dify_dataset_id, doc_name, text)
+
+            # 4. TiDB に構造化保存（1メッセージ = 1レコード）
+            if tidb_available:
+                from upload_tidb import upsert_discord_faq
+                faq_records = to_faq_records(channel_id, channel_name, data["messages"])
+                count = upsert_discord_faq(channel_id, faq_records)
+                print(f"  TiDB 保存: {count} 件")
 
             success_count += 1
             print(f"[{channel_id}] 完了\n")
