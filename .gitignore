@@ -40,6 +40,10 @@ scripts/ingest/notion/tests/out/
 # Node.js
 node_modules/
 
+# Next.js
+.next/
+out/
+
 # Dify local runtime data (contains private keys, plugin caches)
 infra/dify/data/
 

@@ -23,6 +23,22 @@ export const zChatResponse = z.object({
 });
 
 /**
+ * DailyCount
+ */
+export const zDailyCount = z.object({
+  day: z.iso.date(),
+  count: z.int(),
+});
+
+/**
+ * AdminStatsResponse
+ */
+export const zAdminStatsResponse = z.object({
+  daily_questions: z.array(zDailyCount),
+  total_tokens: z.int(),
+});
+
+/**
  * FaqSearchResult
  *
  * FAQ検索結果の1件。
@@ -135,3 +151,14 @@ export const zCreateUsageLogUsageLogsPostData = z.object({
  * Successful Response
  */
 export const zCreateUsageLogUsageLogsPostResponse = zUsageLogResponse;
+
+export const zGetAdminStatsApiAdminStatsGetData = z.object({
+  body: z.never().optional(),
+  path: z.never().optional(),
+  query: z.never().optional(),
+});
+
+/**
+ * Successful Response
+ */
+export const zGetAdminStatsApiAdminStatsGetResponse = zAdminStatsResponse;

@@ -6,6 +6,7 @@ import { client } from "../client.gen";
 import {
   chatApiChatPost,
   createUsageLogUsageLogsPost,
+  getAdminStatsApiAdminStatsGet,
   healthCheckHealthGet,
   type Options,
   searchFaqApiFaqSearchGet,
@@ -17,6 +18,8 @@ import type {
   CreateUsageLogUsageLogsPostData,
   CreateUsageLogUsageLogsPostError,
   CreateUsageLogUsageLogsPostResponse,
+  GetAdminStatsApiAdminStatsGetData,
+  GetAdminStatsApiAdminStatsGetResponse,
   HealthCheckHealthGetData,
   HealthCheckHealthGetResponse,
   SearchFaqApiFaqSearchGetData,
@@ -174,3 +177,33 @@ export const createUsageLogUsageLogsPostMutation = (
   };
   return mutationOptions;
 };
+
+export const getAdminStatsApiAdminStatsGetQueryKey = (
+  options?: Options<GetAdminStatsApiAdminStatsGetData>
+) => createQueryKey("getAdminStatsApiAdminStatsGet", options);
+
+/**
+ * Get Admin Stats
+ *
+ * 管理ダッシュボード用KPI集計エンドポイント。
+ */
+export const getAdminStatsApiAdminStatsGetOptions = (
+  options?: Options<GetAdminStatsApiAdminStatsGetData>
+) =>
+  queryOptions<
+    GetAdminStatsApiAdminStatsGetResponse,
+    DefaultError,
+    GetAdminStatsApiAdminStatsGetResponse,
+    ReturnType<typeof getAdminStatsApiAdminStatsGetQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getAdminStatsApiAdminStatsGet({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getAdminStatsApiAdminStatsGetQueryKey(options),
+  });

@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 
 from exceptions import AppError
 from middleware.request_id import RequestIDMiddleware
-from routers import chat, consent, faq, feedback, health, usage_logs
+from routers import admin, chat, consent, faq, feedback, health, usage_logs
 from services.log_store import _emit_structured_log
 
 app = FastAPI(title="Jyogi Navi API", version="0.1.0")
@@ -86,3 +86,4 @@ app.include_router(faq.router)
 app.include_router(consent.router)
 app.include_router(feedback.router)
 app.include_router(usage_logs.router)
+app.include_router(admin.router)
