@@ -4,11 +4,11 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import { FeedbackButtons } from "../FeedbackButtons";
 
 // API クライアントをモック
-vi.mock("@/client/sdk.gen", () => ({
+vi.mock("@jyogi-navi/openapi/sdk", () => ({
   createFeedbackFeedbackPost: vi.fn(),
 }));
 
-import { createFeedbackFeedbackPost } from "@/client/sdk.gen";
+import { createFeedbackFeedbackPost } from "@jyogi-navi/openapi/sdk";
 
 function wrapper({ children }: { children: React.ReactNode }) {
   const queryClient = new QueryClient({

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
-import { createFeedbackFeedbackPost } from "@/client/sdk.gen";
+import { createFeedbackFeedbackPost } from "@jyogi-navi/openapi/sdk";
 import { cn } from "@/lib/utils";
 
 interface FeedbackButtonsProps {
