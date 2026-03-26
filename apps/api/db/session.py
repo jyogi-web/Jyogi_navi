@@ -12,11 +12,10 @@ from config import settings
 
 
 def _build_engine():
+    connect_args: dict = {}
     if settings.tidb_ssl_ca:
         ssl_ctx = ssl.create_default_context(cafile=settings.tidb_ssl_ca)
-    else:
-        ssl_ctx = ssl.create_default_context()
-    connect_args: dict = {"ssl": ssl_ctx}
+        connect_args["ssl"] = ssl_ctx
 
     url = URL.create(
         drivername="mysql+aiomysql",
