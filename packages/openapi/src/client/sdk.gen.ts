@@ -44,12 +44,13 @@ export type Options<
  * サービスの死活監視エンドポイント。
  */
 export const healthCheckHealthGet = <ThrowOnError extends boolean = false>(
-  options?: Options<HealthCheckHealthGetData, ThrowOnError>
+  options?: Options<HealthCheckHealthGetData, ThrowOnError>,
 ) =>
-  (options?.client ?? client).get<HealthCheckHealthGetResponses, unknown, ThrowOnError>({
-    url: "/health",
-    ...options,
-  });
+  (options?.client ?? client).get<
+    HealthCheckHealthGetResponses,
+    unknown,
+    ThrowOnError
+  >({ url: "/health", ...options });
 
 /**
  * Chat
@@ -57,9 +58,13 @@ export const healthCheckHealthGet = <ThrowOnError extends boolean = false>(
  * Dify Chat API を呼び出してLLMの回答を返すエンドポイント。
  */
 export const chatApiChatPost = <ThrowOnError extends boolean = false>(
-  options: Options<ChatApiChatPostData, ThrowOnError>
+  options: Options<ChatApiChatPostData, ThrowOnError>,
 ) =>
-  (options.client ?? client).post<ChatApiChatPostResponses, ChatApiChatPostErrors, ThrowOnError>({
+  (options.client ?? client).post<
+    ChatApiChatPostResponses,
+    ChatApiChatPostErrors,
+    ThrowOnError
+  >({
     url: "/api/chat",
     ...options,
     headers: {
@@ -74,7 +79,7 @@ export const chatApiChatPost = <ThrowOnError extends boolean = false>(
  * FAQをキーワードで検索するエンドポイント(P0: LIKE検索)。
  */
 export const searchFaqApiFaqSearchGet = <ThrowOnError extends boolean = false>(
-  options: Options<SearchFaqApiFaqSearchGetData, ThrowOnError>
+  options: Options<SearchFaqApiFaqSearchGetData, ThrowOnError>,
 ) =>
   (options.client ?? client).get<
     SearchFaqApiFaqSearchGetResponses,
@@ -108,8 +113,10 @@ export const createFeedbackFeedbackPost = <ThrowOnError extends boolean = false>
  *
  * チャットAPIから呼ばれるトークン消費ログ保存エンドポイント。
  */
-export const createUsageLogUsageLogsPost = <ThrowOnError extends boolean = false>(
-  options: Options<CreateUsageLogUsageLogsPostData, ThrowOnError>
+export const createUsageLogUsageLogsPost = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<CreateUsageLogUsageLogsPostData, ThrowOnError>,
 ) =>
   (options.client ?? client).post<
     CreateUsageLogUsageLogsPostResponses,
@@ -129,10 +136,13 @@ export const createUsageLogUsageLogsPost = <ThrowOnError extends boolean = false
  *
  * 管理ダッシュボード用KPI集計エンドポイント。
  */
-export const getAdminStatsApiAdminStatsGet = <ThrowOnError extends boolean = false>(
-  options?: Options<GetAdminStatsApiAdminStatsGetData, ThrowOnError>
+export const getAdminStatsApiAdminStatsGet = <
+  ThrowOnError extends boolean = false,
+>(
+  options?: Options<GetAdminStatsApiAdminStatsGetData, ThrowOnError>,
 ) =>
-  (options?.client ?? client).get<GetAdminStatsApiAdminStatsGetResponses, unknown, ThrowOnError>({
-    url: "/api/admin/stats",
-    ...options,
-  });
+  (options?.client ?? client).get<
+    GetAdminStatsApiAdminStatsGetResponses,
+    unknown,
+    ThrowOnError
+  >({ url: "/api/admin/stats", ...options });

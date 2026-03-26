@@ -267,7 +267,8 @@ export type ChatApiChatPostErrors = {
   422: HttpValidationError;
 };
 
-export type ChatApiChatPostError = ChatApiChatPostErrors[keyof ChatApiChatPostErrors];
+export type ChatApiChatPostError =
+  ChatApiChatPostErrors[keyof ChatApiChatPostErrors];
 
 export type ChatApiChatPostResponses = {
   /**
@@ -276,7 +277,8 @@ export type ChatApiChatPostResponses = {
   200: ChatResponse;
 };
 
-export type ChatApiChatPostResponse = ChatApiChatPostResponses[keyof ChatApiChatPostResponses];
+export type ChatApiChatPostResponse =
+  ChatApiChatPostResponses[keyof ChatApiChatPostResponses];
 
 export type SearchFaqApiFaqSearchGetData = {
   body?: never;
