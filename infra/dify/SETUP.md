@@ -1,6 +1,6 @@
 # 🐳 Dify セットアップ & 運用ガイド
 
-**最終更新日:** 2026年3月6日  
+**最終更新日:** 2026年3月26日  
 **対象フェーズ:** Sprint 0 (MVP基盤構築)
 
 ---
@@ -19,6 +19,8 @@
 
 - Docker & Docker Compose インストール済み
   - `docker --version` と `docker-compose --version` で確認
+- Docker Desktop / Docker Engine が起動していること
+- （任意）`/var/run/docker.sock` を使う plugin remote install デバッグは明示的に有効化した場合のみ利用
 - **外部サービスアカウント作成済み:**
   - ✅ Supabase プロジェクト（PostgreSQL DB）
   - ✅ TiDB Serverless クラスター（Vector DB）
@@ -27,8 +29,8 @@
 
 ### 使用イメージタグ（固定）
 
-- `langgenius/dify-web:1.13.0`
-- `langgenius/dify-api:1.13.0`
+- `langgenius/dify-api:1.13.3`
+- `langgenius/dify-web:1.13.3`
 
 再現性のため `latest` は使いません。バージョン更新時は `infra/dify/docker-compose.yml` と本ドキュメントを同時更新してください。
 
@@ -84,6 +86,11 @@ DIFY_API_SECRET_KEY=your-api-secret-string
 
 # Dify Web ポート（競合時は変更可）
 DIFY_WEB_PORT=3101
+
+# 永続ストレージ参照先（コンテナ内）
+# 実データは named volume(dify-storage) に保持
+STORAGE_LOCAL_PATH=/app/storage
+OPENDAL_FS_ROOT=/app/storage
 
 # ローカルUIから API(5001) を叩くための CORS 許可
 CORS_ORIGINS=http://127.0.0.1:3101
@@ -142,9 +149,17 @@ docker-compose ps
 # NAME                COMMAND                STATUS              PORTS
 # dify-api            "python  -m dify...."  Up 2 minutes        0.0.0.0:5001->5001/tcp
 # dify-web            "npm run start"        Up 2 minutes        0.0.0.0:3101->3000/tcp
+# dify-worker         "python -m celery..."   Up 2 minutes        5001/tcp
+# dify-worker-beat    "python -m celery..."   Up 2 minutes        5001/tcp
 # dify-plugin-daemon  "./main"               Up 2 minutes        5002/tcp
 # dify-redis          "redis-server..."      Up 2 minutes        0.0.0.0:6379->6379/tcp
+# dify-sandbox        "./entrypoint.sh"      Up 2 minutes        8194/tcp
+# dify-ssrf-proxy     "squid ..."            Up 2 minutes        3128/tcp
 ```
+
+必須確認:
+- `dify-worker` / `dify-worker-beat` が起動していること（非同期ジョブ）
+- `dify-sandbox` / `dify-ssrf-proxy` が起動していること（ツール実行系）
 
 ### 🌐 Dify UI にアクセス
 
@@ -169,7 +184,26 @@ http://127.0.0.1:3101
 docker-compose down
 
 # ボリュームも削除（完全リセット。非推奨）
+# 注意: 過去の named volume 構成では private key も消えるため、
+# provider credentials の復号に失敗して 500 が再発します。
 docker-compose down -v
+```
+
+### 🔁 既存 bind mount(/data) から named volume への移行（必要時のみ）
+
+ローカル `./data` 運用をやめる場合、既存データを named volume に取り込んでから再起動します。
+
+```bash
+cd infra/dify
+
+# 1) API/Worker データを named volume へコピー
+docker run --rm -v dify_dify-storage:/to -v "$(pwd)/data/storage:/from" alpine sh -c "cp -a /from/. /to/"
+
+# 2) plugin-daemon データを named volume へコピー（./data 側にある場合のみ）
+docker run --rm -v dify_dify-plugin-daemon-storage:/to -v "$(pwd)/data/plugin-daemon-storage:/from" alpine sh -c "cp -a /from/. /to/"
+
+# 3) 反映（API/Worker/Plugin を再作成）
+docker-compose up -d --force-recreate
 ```
 
 ---
@@ -321,6 +355,46 @@ docker-compose up -d
 docker-compose restart dify-api
 ```
 
+### 🔴 「PrivkeyNotFoundError / private.pem not found（Model Provider 保存時に 500）」
+
+症状:
+- Dify UI の Model Provider 保存時に 500
+- `dify-api` ログに `PrivkeyNotFoundError` や `private.pem not found`
+
+ポイント:
+- 初回セットアップ直後は通常この作業は不要です（Dify が鍵を作成）。
+- ただし、`docker-compose down -v` 実行やストレージ破損で鍵が消えると再発します。
+
+チェック:
+```bash
+# コンテナ内のストレージ参照先を確認
+docker-compose exec dify-api sh -lc 'echo "$STORAGE_LOCAL_PATH"'
+
+# 対象 tenant の鍵ファイル有無を確認
+docker-compose exec dify-api sh -lc 'ls -l "${STORAGE_LOCAL_PATH}/privkeys/<tenant-id>/private.pem"'
+```
+
+解決方法（コンテナ内で再生成。ローカルに手置きしない）:
+```bash
+# <tenant-id> を実際の tenant UUID に置き換える
+docker-compose exec -u 0 dify-api sh -lc '
+tenant_id="<tenant-id>";
+[ -n "${STORAGE_LOCAL_PATH}" ] || { echo "STORAGE_LOCAL_PATH is empty"; exit 1; };
+storage_path="${STORAGE_LOCAL_PATH}";
+key_path="${storage_path}/privkeys/${tenant_id}/private.pem";
+mkdir -p "$(dirname "$key_path")";
+[ -f "$key_path" ] || openssl genrsa -out "$key_path" 2048;
+chown -R 1001:1001 "${storage_path}/privkeys/${tenant_id}";
+chmod 600 "$key_path"'
+
+# API/Worker を再起動
+docker-compose restart dify-api dify-worker dify-worker-beat
+```
+
+注意:
+- 再生成した鍵は「鍵が無い」エラーを解消しますが、過去の鍵で暗号化済みだった provider credentials は復号できません。
+- その場合は Dify UI で Model Provider の API キーを再入力して保存してください。
+
 ### 🔴 「Gemini API キーが無効」
 
 症状: LLM 回答生成で 「Invalid API key」
@@ -335,6 +409,9 @@ docker-compose restart dify-api
 
 # 3. .env で GOOGLE_API_KEY を確認
 cat .env | grep GOOGLE_API_KEY
+
+# 3.1 プレースホルダのままになっていないか確認
+# NG例: GOOGLE_API_KEY=AIzaSy...(your-gemini-api-key)
 
 # 4. Dify UI > Model Provider > Google で キーを再設定
 ```
