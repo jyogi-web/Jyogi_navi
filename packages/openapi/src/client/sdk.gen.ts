@@ -92,8 +92,10 @@ export const searchFaqApiFaqSearchGet = <ThrowOnError extends boolean = false>(
  *
  * チャット回答への👍/👎フィードバックを保存するエンドポイント。
  */
-export const createFeedbackFeedbackPost = <ThrowOnError extends boolean = false>(
-  options: Options<CreateFeedbackFeedbackPostData, ThrowOnError>
+export const createFeedbackFeedbackPost = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<CreateFeedbackFeedbackPostData, ThrowOnError>,
 ) =>
   (options.client ?? client).post<
     CreateFeedbackFeedbackPostResponses,

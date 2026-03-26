@@ -170,7 +170,7 @@ export const searchFaqApiFaqSearchGetOptions = (
  * チャット回答への👍/👎フィードバックを保存するエンドポイント。
  */
 export const createFeedbackFeedbackPostMutation = (
-  options?: Partial<Options<CreateFeedbackFeedbackPostData>>
+  options?: Partial<Options<CreateFeedbackFeedbackPostData>>,
 ): UseMutationOptions<
   CreateFeedbackFeedbackPostResponse,
   CreateFeedbackFeedbackPostError,
