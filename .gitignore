@@ -43,3 +43,9 @@ node_modules/
 # Next.js
 .next/
 out/
+
+# Dify local runtime data (contains private keys, plugin caches)
+infra/dify/data/
+
+# Local one-off debug scripts
+infra/dify/tmp_*.py
