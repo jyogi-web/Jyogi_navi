@@ -86,8 +86,9 @@ export function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {data.daily_counts.map(({ date, count }) => {
+                    {(() => {
                       const maxCount = Math.max(...data.daily_counts.map((d) => d.count));
+                      return data.daily_counts.map(({ date, count }) => {
                       const pct = maxCount > 0 ? (count / maxCount) * 100 : 0;
                       return (
                         <tr key={date}>
@@ -103,7 +104,8 @@ export function DashboardPage() {
                           </td>
                         </tr>
                       );
-                    })}
+                    });
+                    })()}
                   </tbody>
                 </table>
               </div>
