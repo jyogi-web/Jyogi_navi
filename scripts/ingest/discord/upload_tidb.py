@@ -17,6 +17,7 @@ import json
 import os
 import ssl
 import uuid
+from datetime import datetime, timezone
 
 import pymysql
 
@@ -76,6 +77,7 @@ def upsert_discord_faq(channel_id: str, records: list[dict]) -> int:
                 return 0
 
             # 一括 INSERT
+            now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
             rows = [
                 (
                     str(uuid.uuid4()),
@@ -92,12 +94,14 @@ def upsert_discord_faq(channel_id: str, records: list[dict]) -> int:
                         },
                         ensure_ascii=False,
                     ),
+                    now,
                 )
                 for rec in records
             ]
             cur.executemany(
-                "INSERT INTO faq_embeddings (id, content, content_type, metadata)"
-                " VALUES (%s, %s, %s, %s)",
+                "INSERT INTO faq_embeddings"
+                " (id, content, content_type, metadata, created_at)"
+                " VALUES (%s, %s, %s, %s, %s)",
                 rows,
             )
             conn.commit()
