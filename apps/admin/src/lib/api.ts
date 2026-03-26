@@ -1,14 +1,16 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
-export interface DailyCount {
+// 型定義は apps/web/src/client/types.gen.ts の自動生成型と対応している。
+// apps/admin と apps/web は別パッケージのため、共有パッケージ化は別途対応予定。
+export type DailyCount = {
   day: string;
   count: number;
-}
+};
 
-export interface AdminStats {
+export type AdminStats = {
   daily_questions: DailyCount[];
   total_tokens: number;
-}
+};
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 function generateMockStats(): AdminStats {
   const days: DailyCount[] = [];
