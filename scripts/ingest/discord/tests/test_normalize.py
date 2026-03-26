@@ -17,6 +17,7 @@ from normalize import (
     process_file,
     remove_pii,
     remove_urls,
+    to_faq_records,
 )
 
 SAMPLE_JSON = Path(__file__).parent / "sample_channel.json"
@@ -263,3 +264,63 @@ class TestProcessFile:
         output_file = tmp_path / "subdir" / "output.txt"
         process_file(SAMPLE_JSON, output_file)
         assert output_file.exists()
+
+
+class TestToFaqRecords:
+    """to_faq_records() のテスト。"""
+
+    CHANNEL_ID = "9876543210"
+    CHANNEL_NAME = "general-members"
+
+    def _messages(self):
+        _, messages = load_messages(SAMPLE_JSON)
+        return messages
+
+    def test_bot_messages_excluded(self):
+        records = to_faq_records(self.CHANNEL_ID, self.CHANNEL_NAME, self._messages())
+        authors = [r["author"] for r in records]
+        assert "NotifyBot" not in authors
+
+    def test_stamp_only_excluded(self):
+        records = to_faq_records(self.CHANNEL_ID, self.CHANNEL_NAME, self._messages())
+        # 👍 のみのメッセージ（Charlie）は除外される
+        for r in records:
+            assert r["content"].strip() != ""
+
+    def test_empty_message_excluded(self):
+        records = to_faq_records(self.CHANNEL_ID, self.CHANNEL_NAME, self._messages())
+        # 空メッセージ（Eve）は除外される
+        assert all(r["content"] for r in records)
+
+    def test_correct_count(self):
+        # 7件中: Bot(1) + 絵文字のみ(1) + 空(1) = 3件除外 → 4件
+        records = to_faq_records(self.CHANNEL_ID, self.CHANNEL_NAME, self._messages())
+        assert len(records) == 4
+
+    def test_one_record_per_message(self):
+        records = to_faq_records(self.CHANNEL_ID, self.CHANNEL_NAME, self._messages())
+        # 各レコードの content に改行で複数メッセージが入っていないことを確認
+        for r in records:
+            # タイムスタンプ付きプレフィックス（"YYYY-MM-DD HH:MM author:"）が
+            # content 内に含まれていないこと = 複数メッセージが結合されていないこと
+            assert "\n" not in r["content"]
+
+    def test_metadata_fields_present(self):
+        records = to_faq_records(self.CHANNEL_ID, self.CHANNEL_NAME, self._messages())
+        for r in records:
+            assert r["message_id"]
+            assert r["channel_id"] == self.CHANNEL_ID
+            assert r["channel_name"] == self.CHANNEL_NAME
+            assert r["author"]
+            assert r["timestamp"]
+
+    def test_pii_removed_from_content(self):
+        records = to_faq_records(self.CHANNEL_ID, self.CHANNEL_NAME, self._messages())
+        contents = " ".join(r["content"] for r in records)
+        assert "<@" not in contents
+        assert "dave@example.com" not in contents
+        assert "https://" not in contents
+
+    def test_empty_messages_returns_empty(self):
+        records = to_faq_records(self.CHANNEL_ID, self.CHANNEL_NAME, [])
+        assert records == []

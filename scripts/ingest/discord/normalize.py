@@ -91,6 +91,32 @@ def format_timestamp(timestamp_str: str) -> str:
         return timestamp_str
 
 
+def to_faq_records(
+    channel_id: str, channel_name: str, messages: list[dict]
+) -> list[dict]:
+    """メッセージ 1 件を TiDB faq_embeddings 用の 1 レコードに変換して返す。
+
+    Bot・スタンプのみ・空メッセージは除外する。
+    """
+    records = []
+    for msg in messages:
+        if is_bot_message(msg) or is_stamp_only(msg):
+            continue
+        content = clean_content(msg.get("content", ""))
+        if not content:
+            continue
+        records.append({
+            "message_id": msg["id"],
+            "channel_id": channel_id,
+            "channel_name": channel_name,
+            "author": msg.get("author", {}).get("name", "unknown"),
+            "author_id": msg.get("author", {}).get("id", ""),
+            "timestamp": msg.get("timestamp", ""),
+            "content": content,
+        })
+    return records
+
+
 def format_for_dify(channel_name: str, messages: list[dict]) -> str:
     """Dify取り込み用のプレーンテキストを生成する。"""
     lines = [f"# {channel_name}", ""]
