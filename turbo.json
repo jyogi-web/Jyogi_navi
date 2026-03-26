@@ -3,7 +3,7 @@
   "ui": "tui",
   "tasks": {
     "build": {
-      "dependsOn": ["^build", "openapi:generate"],
+      "dependsOn": ["^build", "openapi#openapi:generate"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
@@ -28,7 +28,7 @@
     },
     "openapi:generate": {
       "dependsOn": ["api#openapi:export"],
-      "inputs": ["../api/openapi.json", "openapi-ts.config.ts"],
+      "inputs": ["openapi-ts.config.ts"],
       "outputs": ["src/client/**"]
     }
   }

@@ -1,0 +1,25 @@
+{
+  "name": "@jyogi-navi/openapi",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/client/index.ts",
+    "./client": "./src/client/client.gen.ts",
+    "./types": "./src/client/types.gen.ts",
+    "./zod": "./src/client/zod.gen.ts",
+    "./sdk": "./src/client/sdk.gen.ts",
+    "./react-query": "./src/client/@tanstack/react-query.gen.ts"
+  },
+  "scripts": {
+    "openapi:generate": "openapi-ts"
+  },
+  "devDependencies": {
+    "@hey-api/openapi-ts": "^0.94.2"
+  },
+  "dependencies": {
+    "@hey-api/client-fetch": "^0.13.1",
+    "@tanstack/react-query": "^5.90.21",
+    "zod": "^4.3.6"
+  }
+}
