@@ -31,12 +31,12 @@ jobs:
         run: uv sync
 
       - name: Write TiDB CA certificate
-        if: ${{ secrets.TIDB_SSL_CA != '' }}
         env:
           TIDB_SSL_CA_CONTENT: ${{ secrets.TIDB_SSL_CA }}
         run: |
-          echo "$TIDB_SSL_CA_CONTENT" > /tmp/tidb_ca.pem
-          chmod 600 /tmp/tidb_ca.pem
+          if [ -n "$TIDB_SSL_CA_CONTENT" ]; then
+            echo "$TIDB_SSL_CA_CONTENT" > /tmp/tidb_ca.pem && chmod 600 /tmp/tidb_ca.pem
+          fi
 
       - name: Run ingest pipeline
         env:
