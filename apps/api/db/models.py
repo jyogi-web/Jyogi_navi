@@ -92,7 +92,7 @@ class Feedback(Base):
         String(36),
         ForeignKey("sessions.id"),
     )
-    rating: Mapped[str] = mapped_column(String(10), nullable=False)
+    rating: Mapped[str] = mapped_column(Enum("good", "bad"), nullable=False)
     comment: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
