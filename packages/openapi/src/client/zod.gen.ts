@@ -76,7 +76,7 @@ export const zFeedbackCreate = z.object({
 export const zFeedbackItem = z.object({
   id: z.string(),
   session_id: z.string(),
-  rating: z.string(),
+  rating: z.enum(["good", "bad"]),
   comment: z.string().nullable(),
   created_at: z.iso.datetime(),
 });
@@ -99,7 +99,7 @@ export const zFeedbackListResponse = z.object({
 export const zFeedbackResponse = z.object({
   id: z.string(),
   session_id: z.string(),
-  rating: z.string(),
+  rating: z.enum(["good", "bad"]),
   comment: z.string().nullable(),
   created_at: z.iso.datetime(),
 });

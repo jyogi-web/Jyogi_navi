@@ -129,7 +129,7 @@ export type FeedbackItem = {
   /**
    * Rating
    */
-  rating: string;
+  rating: "good" | "bad";
   /**
    * Comment
    */
@@ -173,7 +173,7 @@ export type FeedbackResponse = {
   /**
    * Rating
    */
-  rating: string;
+  rating: "good" | "bad";
   /**
    * Comment
    */

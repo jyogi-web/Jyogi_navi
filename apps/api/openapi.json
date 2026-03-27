@@ -552,6 +552,10 @@
           },
           "rating": {
             "type": "string",
+            "enum": [
+              "good",
+              "bad"
+            ],
             "title": "Rating"
           },
           "comment": {
@@ -616,6 +620,10 @@
           },
           "rating": {
             "type": "string",
+            "enum": [
+              "good",
+              "bad"
+            ],
             "title": "Rating"
           },
           "comment": {

@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -21,7 +22,7 @@ class FeedbackItem(BaseModel):
 
     id: str
     session_id: str
-    rating: str
+    rating: Literal["good", "bad"]
     comment: str | None
     created_at: datetime
 
