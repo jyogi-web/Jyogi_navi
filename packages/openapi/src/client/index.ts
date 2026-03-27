@@ -96,5 +96,6 @@ export type {
   UsageLogCreate,
   UsageLogResponse,
   UserResponse,
+  UserRole,
   ValidationError,
 } from "./types.gen";

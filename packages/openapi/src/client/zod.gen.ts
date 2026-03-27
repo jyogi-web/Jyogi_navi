@@ -137,6 +137,13 @@ export const zUsageLogResponse = z.object({
 });
 
 /**
+ * UserRole
+ *
+ * 管理ユーザーのロール。
+ */
+export const zUserRole = z.enum(["ADMIN", "MEMBER"]);
+
+/**
  * UserResponse
  *
  * 管理ユーザー情報レスポンス。
@@ -144,7 +151,7 @@ export const zUsageLogResponse = z.object({
 export const zUserResponse = z.object({
   id: z.string(),
   discord_user_id: z.string(),
-  role: z.string(),
+  role: zUserRole,
 });
 
 /**

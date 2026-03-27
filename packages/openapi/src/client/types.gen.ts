@@ -270,11 +270,15 @@ export type UserResponse = {
    * Discord User Id
    */
   discord_user_id: string;
-  /**
-   * Role
-   */
-  role: string;
+  role: UserRole;
 };
+
+/**
+ * UserRole
+ *
+ * 管理ユーザーのロール。
+ */
+export type UserRole = "ADMIN" | "MEMBER";
 
 /**
  * ValidationError

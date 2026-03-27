@@ -770,8 +770,7 @@
             "title": "Discord User Id"
           },
           "role": {
-            "type": "string",
-            "title": "Role"
+            "$ref": "#/components/schemas/UserRole"
           }
         },
         "type": "object",
@@ -782,6 +781,15 @@
         ],
         "title": "UserResponse",
         "description": "管理ユーザー情報レスポンス。"
+      },
+      "UserRole": {
+        "type": "string",
+        "enum": [
+          "ADMIN",
+          "MEMBER"
+        ],
+        "title": "UserRole",
+        "description": "管理ユーザーのロール。"
       },
       "ValidationError": {
         "properties": {

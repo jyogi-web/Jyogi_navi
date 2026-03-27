@@ -2,6 +2,8 @@
 
 from pydantic import BaseModel, ConfigDict
 
+from db.models import UserRole
+
 
 class UserResponse(BaseModel):
     """管理ユーザー情報レスポンス。"""
@@ -10,4 +12,4 @@ class UserResponse(BaseModel):
 
     id: str
     discord_user_id: str
-    role: str
+    role: UserRole
