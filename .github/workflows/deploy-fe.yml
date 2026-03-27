@@ -31,10 +31,12 @@ jobs:
               - 'apps/web/**'
               - 'packages/**'
               - 'pnpm-lock.yaml'
+              - '.github/workflows/deploy-fe.yml'
             admin:
               - 'apps/admin/**'
               - 'packages/**'
               - 'pnpm-lock.yaml'
+              - '.github/workflows/deploy-fe.yml'
 
   deploy-web:
     name: Deploy Web
