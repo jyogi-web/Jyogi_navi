@@ -17,6 +17,33 @@ function generateMockStats(): AdminStats {
   return { daily_counts: days, total_tokens, good_rate: 0 };
 }
 
+export interface FeedbackItem {
+  id: string;
+  session_id: string;
+  rating: "good" | "bad";
+  comment: string | null;
+  created_at: string;
+}
+
+export interface FeedbackListResponse {
+  feedbacks: FeedbackItem[];
+  total: number;
+}
+
+export async function fetchFeedbacks(
+  limit = 50,
+  offset = 0,
+): Promise<FeedbackListResponse> {
+  const res = await fetch(
+    `${API_BASE_URL}/api/admin/feedbacks?limit=${limit}&offset=${offset}`,
+    { cache: "no-store", credentials: "include" },
+  );
+  if (!res.ok) {
+    throw new Error(`Failed to fetch feedbacks: ${res.status}`);
+  }
+  return res.json() as Promise<FeedbackListResponse>;
+}
+
 export async function fetchAdminStats(): Promise<AdminStats> {
   if (process.env.NEXT_PUBLIC_USE_MOCK === "true") {
     return generateMockStats();
