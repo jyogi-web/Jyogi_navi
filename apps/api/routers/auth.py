@@ -72,6 +72,7 @@ async def callback(
         httponly=True,
         samesite="lax",
         max_age=settings.jwt_expire_minutes * 60,
+        secure=settings.jwt_cookie_secure,
     )
     return response
 
