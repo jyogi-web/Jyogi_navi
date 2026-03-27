@@ -2,6 +2,7 @@ import logging
 
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models import Session as SessionModel
@@ -40,8 +41,17 @@ async def chat(
             select(SessionModel).where(SessionModel.id == body.session_id)
         )
         if result.scalar_one_or_none() is None:
-            session.add(SessionModel(id=body.session_id, is_guest=True, consented=True))
-            await session.flush()
+            try:
+                session.add(
+                    SessionModel(id=body.session_id, is_guest=True, consented=True)
+                )
+                await session.flush()
+            except IntegrityError:
+                # 同一 session_id の並列リクエストによる競合は無害
+                logger.debug(
+                    "session already exists (race): session_id=%s", body.session_id
+                )
+                await session.rollback()
 
         await save_usage_log(
             session=session,
