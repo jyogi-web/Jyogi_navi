@@ -22,12 +22,15 @@ function getErrorMessage(error: unknown): string {
   if (errorCode === "EXTERNAL_SERVICE_ERROR") {
     return "現在サービスが混雑しています。しばらくお待ちください。";
   }
+  if (errorCode === "SESSION_ERROR") {
+    return "セッションの初期化に失敗しました。ページを再読み込みしてください。";
+  }
   return "申し訳ございません。エラーが発生しました。もう一度お試しください。";
 }
 
 export function ChatContainer() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [sessionId] = useState(() => getOrCreateSessionId());
+  const [sessionId] = useState<string>(() => getOrCreateSessionId());
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // 新しいメッセージが追加されたら自動スクロール
@@ -37,6 +40,9 @@ export function ChatContainer() {
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (content: string): Promise<string> => {
+      if (sessionId === "") {
+        throw { errorCode: "SESSION_ERROR" } satisfies ApiError;
+      }
       const { data, error } = await chatApiChatPost({
         body: { session_id: sessionId, message: content },
       });
