@@ -22,6 +22,10 @@
             python313
             uv
 
+            # Infrastructure
+            terraform
+            tflint
+
             # Development tools
             lefthook
             gh
@@ -35,6 +39,8 @@
             echo "  - pnpm $(pnpm --version)"
             echo "  - Python $(python --version | cut -d' ' -f2)"
             echo "  - uv $(uv --version | cut -d' ' -f2)"
+            echo "  - terraform $(terraform --version | head -n1 | cut -d'v' -f2)"
+            echo "  - tflint $(tflint --version | head -n1 | cut -d'v' -f2)"
             echo "  - lefthook $(lefthook version)"
             echo "  - gh $(gh --version | head -n1 | cut -d' ' -f3)"
             echo ""
