@@ -112,8 +112,7 @@ apps/api/
 ```
 infra/dify/
 ├── docker-compose.yml        # Dify公式composeをベースにカスタマイズ
-└── .env.example              # Dify環境変数テンプレート
-                              # （TiDB / Supabase / Gemini キー等）
+└── SETUP.md                  # セットアップ・運用手順（環境変数設定含む）
 ```
 
 > Dify自体のコードは管理しない。公式Dockerイメージをそのまま使用。
@@ -176,7 +175,7 @@ infra/
 │   └── versions.tf               # Provider バージョン固定
 ├── dify/
 │   ├── docker-compose.yml        # Dify公式compose（自宅PC上で実行）
-│   └── SETUP.md                  # セットアップ手順
+│   └── SETUP.md                  # セットアップ・運用手順（環境変数設定含む）
 ├── docker/
 │   └── api.Dockerfile            # FastAPI用（Cloud Run へデプロイ）
 └── env/
