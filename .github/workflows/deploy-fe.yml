@@ -12,7 +12,7 @@ on:
 
 concurrency:
   group: deploy-fe-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false # デプロイ中断で Worker が壊れた状態になるのを防ぐ
 
 jobs:
   detect-changes:
