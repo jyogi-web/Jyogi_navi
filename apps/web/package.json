@@ -5,9 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:worker": "opennextjs-cloudflare build",
-    "deploy": "opennextjs-cloudflare deploy",
-    "preview:worker": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "build:pages": "opennextjs-cloudflare build",
+    "deploy": "opennextjs-cloudflare build && wrangler pages deploy",
+    "preview:pages": "opennextjs-cloudflare build && wrangler pages dev",
     "start": "next start",
     "lint": "oxlint && eslint",
     "lint:css": "stylelint \"**/*.css\" --allow-empty-input",
