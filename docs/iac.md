@@ -128,22 +128,9 @@ Cloud Run バックエンド API に必要な GCP リソースをすべて Terra
 ```bash
 cd infra/gcp
 
-# 1. terraform.tfvars を作成（.gitignore 済み）
-cat > terraform.tfvars <<EOF
-gcp_project_id        = "<your-project-id>"
-tidb_host             = "<your-tidb-host>"
-tidb_user             = "<your-tidb-user>"
-tidb_password         = "<your-tidb-password>"
-tidb_database         = "<your-tidb-database>"
-supabase_url          = "<your-supabase-url>"
-supabase_secret       = "<your-supabase-secret>"
-dify_api_base_url     = "<your-dify-url>"
-dify_api_key          = "<your-dify-key>"
-discord_client_id     = "<your-discord-client-id>"
-discord_client_secret = "<your-discord-client-secret>"
-discord_guild_id      = "<your-discord-guild-id>"
-allowed_origins       = "https://jyogi-navi-web.<domain>,https://jyogi-navi-admin.<domain>"
-EOF
+# 1. terraform.tfvars を作成（テンプレートをコピーして値を埋める）
+cp terraform.tfvars.example terraform.tfvars
+# terraform.tfvars を編集して各値を設定する（.gitignore 済みのため Git にはコミットされない）
 
 # 2. GCP API を有効化（初回のみ）
 gcloud services enable \
@@ -212,19 +199,13 @@ Cloudflare・GCP 両方の GitHub Actions Secrets を一元管理します。
 ```bash
 cd infra/github
 
-# 1. terraform.tfvars を作成（.gitignore 済み）
-# infra/gcp の outputs を確認
+# 1. infra/gcp の outputs を確認（terraform.tfvars に転記する値を取得）
 cd ../gcp && terraform output
 cd ../github
 
-cat > terraform.tfvars <<EOF
-github_token                    = "<your-github-pat>"
-cloudflare_api_token            = "<your-cf-api-token>"
-cloudflare_account_id           = "<your-cf-account-id>"
-gcp_workload_identity_provider  = "<infra/gcp output: workload_identity_provider>"
-gcp_service_account             = "<infra/gcp output: service_account_email>"
-gcp_project_id                  = "<your-project-id>"
-EOF
+# 2. terraform.tfvars を作成（テンプレートをコピーして値を埋める）
+cp terraform.tfvars.example terraform.tfvars
+# terraform.tfvars を編集して各値を設定する（.gitignore 済みのため Git にはコミットされない）
 
 # 2. 初期化
 terraform init
