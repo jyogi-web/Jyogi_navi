@@ -1,36 +1,16 @@
 name: Deploy API
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "apps/api/**"
-      - ".github/workflows/deploy-api.yml"
+  push: # テスト中: 全ブランチからデプロイ可能（確認後 branches: [main] に戻す）
+  workflow_dispatch: # 手動実行も可能
 
 concurrency:
   group: deploy-api-${{ github.ref }}
   cancel-in-progress: false # デプロイ中断で Cloud Run が壊れた状態になるのを防ぐ
 
 jobs:
-  detect-changes:
-    name: Detect Changes
-    runs-on: ubuntu-latest
-    outputs:
-      api: ${{ steps.filter.outputs.api }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            api:
-              - 'apps/api/**'
-              - '.github/workflows/deploy-api.yml'
-
   build-push:
     name: Build & Push
-    needs: detect-changes
-    if: needs.detect-changes.outputs.api == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
